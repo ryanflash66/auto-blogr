@@ -1,0 +1,307 @@
+/**
+ * AutoBlogr AI Publisher - Admin Styles
+ *
+ * Styles for the plugin admin interface.
+ *
+ * @package AutoBlogr
+ * @since 1.0.0
+ */
+
+/* Admin Page Layout */
+.autoblogr-admin-page {
+  max-width: 1200px;
+  margin: 20px 0;
+}
+
+.autoblogr-admin-page .wrap {
+  position: relative;
+}
+
+/* Settings Form Styling */
+.autoblogr-settings-form {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+  margin: 20px 0;
+}
+
+.autoblogr-settings-form .form-table {
+  margin: 0;
+}
+
+.autoblogr-settings-form .form-table th {
+  background: #f6f7f7;
+  border-bottom: 1px solid #c3c4c7;
+  font-weight: 600;
+  padding: 15px 20px;
+  width: 200px;
+}
+
+.autoblogr-settings-form .form-table td {
+  border-bottom: 1px solid #c3c4c7;
+  padding: 15px 20px;
+  vertical-align: top;
+}
+
+.autoblogr-settings-form .form-table tr:last-child th,
+.autoblogr-settings-form .form-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Indicators */
+.autoblogr-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.autoblogr-status.status-queued {
+  background: #f0f6fc;
+  color: #0073aa;
+  border: 1px solid #c3c4c7;
+}
+
+.autoblogr-status.status-processing {
+  background: #fef7f0;
+  color: #d63638;
+  border: 1px solid #ddd;
+}
+
+.autoblogr-status.status-published {
+  background: #f0f6fc;
+  color: #00a32a;
+  border: 1px solid #c3c4c7;
+}
+
+.autoblogr-status.status-error {
+  background: #fcf0f1;
+  color: #d63638;
+  border: 1px solid #d63638;
+}
+
+/* Posts List Table */
+.autoblogr-posts-table {
+  margin-top: 20px;
+}
+
+.autoblogr-posts-table .column-title {
+  width: 25%;
+}
+
+.autoblogr-posts-table .column-autoblogr-id {
+  width: 15%;
+}
+
+.autoblogr-posts-table .column-wp-id {
+  width: 10%;
+}
+
+.autoblogr-posts-table .column-status {
+  width: 15%;
+}
+
+.autoblogr-posts-table .column-date {
+  width: 15%;
+}
+
+.autoblogr-posts-table .column-error {
+  width: 20%;
+}
+
+/* Action Links */
+.autoblogr-actions {
+  margin-top: 10px;
+}
+
+.autoblogr-actions a {
+  margin-right: 10px;
+  text-decoration: none;
+}
+
+.autoblogr-actions a:hover {
+  text-decoration: underline;
+}
+
+/* Loading States */
+.autoblogr-loading {
+  position: relative;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.autoblogr-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #ccc;
+  border-top-color: #0073aa;
+  border-radius: 50%;
+  animation: autoblogr-spin 1s linear infinite;
+}
+
+@keyframes autoblogr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Notices and Messages */
+.autoblogr-notice {
+  margin: 20px 0;
+  padding: 15px;
+  border-left: 4px solid #0073aa;
+  background: #f0f6fc;
+  border-radius: 0 3px 3px 0;
+}
+
+.autoblogr-notice.notice-success {
+  border-left-color: #00a32a;
+  background: #f0f6fc;
+}
+
+.autoblogr-notice.notice-warning {
+  border-left-color: #dba617;
+  background: #fef7f0;
+}
+
+.autoblogr-notice.notice-error {
+  border-left-color: #d63638;
+  background: #fcf0f1;
+}
+
+.autoblogr-notice p {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Configuration Status */
+.autoblogr-config-status {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.autoblogr-config-item {
+  flex: 1;
+  padding: 15px;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.autoblogr-config-item.configured {
+  border-color: #00a32a;
+  background: #f0f6fc;
+}
+
+.autoblogr-config-item.not-configured {
+  border-color: #d63638;
+  background: #fcf0f1;
+}
+
+.autoblogr-config-item h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.autoblogr-config-item .dashicons {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.autoblogr-config-item.configured .dashicons {
+  color: #00a32a;
+}
+
+.autoblogr-config-item.not-configured .dashicons {
+  color: #d63638;
+}
+
+/* Help Text */
+.autoblogr-help {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background: #f6f7f7;
+  border: 1px solid #c3c4c7;
+  border-radius: 3px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.autoblogr-help code {
+  background: #fff;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-family: "Courier New", Courier, monospace;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 782px) {
+  .autoblogr-config-status {
+    flex-direction: column;
+  }
+
+  .autoblogr-posts-table .column-error {
+    display: none;
+  }
+
+  .autoblogr-settings-form .form-table th,
+  .autoblogr-settings-form .form-table td {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+  }
+
+  .autoblogr-settings-form .form-table th {
+    border-bottom: none;
+    font-weight: 600;
+    background: transparent;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .autoblogr-settings-form {
+    background: #1d2327;
+    border-color: #3c434a;
+  }
+
+  .autoblogr-settings-form .form-table th {
+    background: #23282d;
+    border-color: #3c434a;
+    color: #f0f0f1;
+  }
+
+  .autoblogr-settings-form .form-table td {
+    border-color: #3c434a;
+    color: #f0f0f1;
+  }
+
+  .autoblogr-config-item {
+    background: #1d2327;
+    border-color: #3c434a;
+    color: #f0f0f1;
+  }
+
+  .autoblogr-help {
+    background: #23282d;
+    border-color: #3c434a;
+    color: #f0f0f1;
+  }
+
+  .autoblogr-help code {
+    background: #1d2327;
+    color: #f0f0f1;
+  }
+}

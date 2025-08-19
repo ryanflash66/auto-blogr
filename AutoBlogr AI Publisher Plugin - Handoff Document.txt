@@ -1,0 +1,271 @@
+**AutoBlogr AI Publisher Plugin - Handoff Document**
+
+---
+
+## 1. Plugin Purpose & Role
+
+The Base44 AI Publisher plugin acts as a secure listener and publisher on WordPress sites, receiving blog post data (including content and hero images) from the Base44 AI Studio and handling authentication, media import, post creation, and status updates via secure REST endpoints to automate publishing and management of AI-generated content.
+
+---
+
+## 2. Environment & Compatibility
+
+* **WordPress**: 6.0+
+* **PHP**: 7.4+
+* **Multisite**: Full support; settings stored per sub-site via `get_blog_option()` / `update_blog_option()`.
+
+---
+
+## 3. Plugin Metadata & Packaging
+
+**Plugin Header (base44-ai-publisher.php)**
+
+```php
+<?php
+/**
+ * Plugin Name: Base44 AI Publisher
+ * Plugin URI: https://base44.com
+ * Description: Connects your WordPress site to the Base44 AI Studio for automated blog post publishing and management.
+ * Version: 1.0.0
+ * Author: Base44
+ * Author URI: https://base44.com
+ * License: GPL-2.0-or-later
+ * Text Domain: base44-ai-publisher
+ * Domain Path: /languages
+ */
+```
+
+**README.md** (WordPress.org readme.txt format):
+
+```
+== Plugin Name ==
+= Description =
+= Installation =
+= Frequently Asked Questions =
+= Screenshots =
+= Changelog =
+= Upgrade Notice =
+```
+
+---
+
+## 4. Activation / Deactivation / Uninstall Hooks
+
+* **register\_activation\_hook**: Set default options, schedule WP-Cron(s), register capabilities.
+* **register\_deactivation\_hook**: Clear scheduled Cron jobs; retain options/meta.
+* **register\_uninstall\_hook**: Remove plugin options and post meta (`_base44_*`), custom capabilities, and Cron events.
+
+---
+
+## 5. Plugin Configuration & Settings
+
+**Settings Page (Settings → Base44 AI Publisher)**:
+
+* Base44 Callback URL (text)
+* Base44 Callback API Key (obscured)
+* Default Post Status (draft / pending / publish)
+* Default Post Type (post / page / custom)
+* Default Author Fallback (dropdown/user ID)
+* Log Level (Errors Only / All Actions)
+
+*Store the callback key encrypted in **`** using **`** with salts from **`** / **`**.*
+
+---
+
+## 6. Security & Validation
+
+* **Authentication**: WordPress Application Passwords + HMAC signature (`X-Base44-Signature`).
+* **Sanitization**:
+
+  * `wp_kses_post()` for content
+  * `sanitize_text_field()` / `wp_strip_all_tags()` for titles, excerpts, meta
+  * `esc_url_raw()` for image URLs
+* **TLS**: Enforce SSL on all external HTTP calls.
+
+---
+
+## 7. Data Modeling & Persistence
+
+* **Meta Keys**: `_base44_blog_post_id`, `_base44_seo_title`, `_base44_meta_description`.
+* **Taxonomies**: `wp_set_post_tags()` auto-creates tags; `default_category` via `wp_insert_term()` fallback to “Uncategorized”.
+* **Author Fallback**: If missing, use the Application Password user.
+
+---
+
+## 8. Asynchronous Workflows & Error Handling
+
+* **Endpoint** returns `202 Accepted` immediately and queues via WP-Cron.
+* **WP-Cron Job**: Downloads media, runs `wp_insert_post()`, updates meta.
+* **Retries**: 3 attempts (5s, 30s, 2m) with exponential backoff.
+* **Logging**: Custom `wp-content/uploads/base44-logs/plugin.log` plus `error_log()` when `WP_DEBUG_LOG` is on.
+
+---
+
+## 9. Status Callbacks
+
+* **Initial Callback**: "Queued" on task enqueue.
+* **Final Callback**: "Published" or "Error" with `wordpress_post_id`, timestamp, or error message.
+* **Auth**: `X-Base44-Callback-Token` header; retries (5 attempts: 1m, 5m, 15m, 1h, 3h).
+
+---
+
+## 10. Dashboard UX in Admin
+
+**Menu**: "Base44 Posts" top-level in admin sidebar.
+**List Table** (`WP_List_Table`):
+
+* Columns: Title, Base44 Idea ID, Base44 Post ID, WP Post ID, Base44 Status, WP Status, Last Update, Error Message.
+* Filters: Base44 Status, WP Status, Date.
+* Actions: View/Edit in WP, View Public, Retry Publish, Base44 App links.
+* Pagination/Search: Standard.
+
+---
+
+## 11. Capability & Role Granularity
+
+* **Custom Caps**: `manage_base44_publisher_settings`, `publish_base44_posts`.
+* **Default Assignment**: Admin → both; Editors → `publish_base44_posts`; Dashboard view → `edit_posts`.
+
+---
+
+## 12. REST API Versioning & Discovery
+
+* **Namespace**: `/wp-json/base44-ai-publisher/v1/`.
+* **OPTIONS**: Supported via WP REST API discovery.
+
+---
+
+## 13. Localization & Documentation
+
+* **Text Domain**: `base44-ai-publisher`; wrap strings in `__()`/`_e()`.
+* **Help Tabs**: Use `add_help_tab` on Settings and Dashboard screens.
+* **.pot** file in `/languages`.
+
+---
+
+## 14. Versioning & Update Strategy
+
+* **SemVer**: MAJOR.MINOR.PATCH.
+* **Changelog**: Maintain in README.
+* **Updates**: WP.org or self-hosted; v2 for breaking changes.
+
+---
+
+## 15. Testing & Quality Assurance
+
+* **Unit Tests**: REST routes, media handling, post creation, Cron, callbacks, encryption.
+* **Integration Tests**: WP-CLI / Docker-based suite simulating Base44 requests.
+* **Coverage**: ≥80%.
+* **Static Analysis**: PHPStan (WP rules).
+
+---
+
+## 16. Performance & Rate-Limiting
+
+* **Throttling**: Async queue; proxy/firewall upstream.
+* **Object Cache**: Cache option lookups, term/author IDs.
+
+---
+
+## 17. Error Notifications & Alerts
+
+* **Email**: Admin on permanent failures.
+* **Admin Notices**: Persistent for misconfig, transient for operations.
+
+---
+
+## 18. CI/CD / Deployment
+
+* **GitHub Actions**: Lint (PHP\_CodeSniffer), Tests, Build ZIP on tag.
+* **Security Scans**: PHPStan, periodic WPScan.
+
+---
+
+## 19. Future Considerations
+
+* **Scheduling**: Support future posts via `post_date`.
+* **Update/Delete**: Endpoints `/posts/{id}` with PUT/DELETE.
+
+---
+
+## 20. Boilerplate & Folder Structure
+
+```
+base44-ai-publisher/
+├── README.md
+├── base44-ai-publisher.php
+├── uninstall.php
+├── includes/
+│   ├── class-settings.php
+│   ├── class-rest-controller.php
+│   ├── class-cron-handler.php
+│   └── class-callback-handler.php
+├── assets/
+│   ├── css/admin.css
+│   └── js/admin.js
+├── languages/
+│   └── base44-ai-publisher.pot
+└── vendor/  # Composer dependencies
+```
+
+**Main Plugin Boilerplate (base44-ai-publisher.php)**
+
+```php
+<?php
+/**
+ * Plugin Name: Base44 AI Publisher
+ * Plugin URI: https://base44.com
+ * Description: Connects your WordPress site to the Base44 AI Studio for automated blog post publishing and management.
+ * Version: 1.0.0
+ * Author: Base44
+ * Author URI: https://base44.com
+ * License: GPL-2.0-or-later
+ * Text Domain: base44-ai-publisher
+ * Domain Path: /languages
+ */
+
+if (!defined('ABSPATH')) exit;
+
+require_once __DIR__ . '/includes/class-settings.php';
+require_once __DIR__ . '/includes/class-rest-controller.php';
+require_once __DIR__ . '/includes/class-cron-handler.php';
+require_once __DIR__ . '/includes/class-callback-handler.php';
+
+register_activation_hook(__FILE__, ['Base44_Settings', 'activate']);
+register_deactivation_hook(__FILE__, ['Base44_Settings', 'deactivate']);
+register_uninstall_hook(__FILE__, 'base44_uninstall');
+
+add_action('plugins_loaded', ['Base44_Settings', 'init']);
+add_action('rest_api_init', ['Base44_REST_Controller', 'register_routes']);
+```
+
+**Sample REST Endpoint (includes/class-rest-controller.php)**
+
+```php
+<?php
+class Base44_REST_Controller {
+    const NAMESPACE = 'base44-ai-publisher/v1';
+
+    public static function register_routes() {
+        register_rest_route(self::NAMESPACE, '/publish-post', [
+            'methods'             => 'POST',
+            'callback'            => ['Base44_REST_Controller', 'handle_publish_post'],
+            'permission_callback' => ['Base44_REST_Controller', 'permission_check'],
+        ]);
+    }
+
+    public static function permission_check($request) {
+        // Authenticate Application Password + verify HMAC signature
+        return Base44_Auth::check_application_password($request)
+            && Base44_Auth::verify_signature($request);
+    }
+
+    public static function handle_publish_post($request) {
+        // Validate and sanitize payload
+        $params = $request->get_params();
+        // Queue for asynchronous processing
+        wp_schedule_single_event(time(), 'base44_queue_publish', [$params]);
+        return new WP_REST_Response(null, 202);
+    }
+}
+```

@@ -1,0 +1,49 @@
+{
+  "name": "autoblogr/ai-publisher",
+  "description": "AI-powered blog drafting and publishing WordPress plugin with Slack integration",
+  "type": "wordpress-plugin",
+  "version": "1.0.0",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "AutoBlogr",
+      "homepage": "https://autoblogr.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "composer/installers": "^1.0|^2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0",
+    "wp-coding-standards/wpcs": "^2.3",
+    "phpstan/phpstan": "^1.0",
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "AutoBlogr\\": "includes/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "AutoBlogr\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "lint": "phpcs --standard=WordPress includes/ auto-blogr.php",
+    "lint:fix": "phpcbf --standard=WordPress includes/ auto-blogr.php",
+    "test": "phpunit",
+    "analyze": "phpstan analyse includes/ auto-blogr.php --level=5"
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "sort-packages": true
+  },
+  "extra": {
+    "installer-name": "auto-blogr"
+  }
+}

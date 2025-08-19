@@ -1,0 +1,269 @@
+# AutoBlogr AI Publisher
+# Translation template file
+# Copyright (C) 2025 AutoBlogr
+# This file is distributed under the GPL-2.0-or-later license.
+
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: AutoBlogr AI Publisher 1.0.0\n"
+"Report-Msgid-Bugs-To: https://autoblogr.com/support\n"
+"POT-Creation-Date: 2025-01-01 00:00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: includes/class-auth.php:42
+msgid "Authorization header is required."
+msgstr ""
+
+#: includes/class-auth.php:51
+msgid "Invalid authorization format. Basic authentication required."
+msgstr ""
+
+#: includes/class-auth.php:60
+msgid "Invalid credentials format."
+msgstr ""
+
+#: includes/class-auth.php:72
+msgid "Authentication failed. Invalid username or application password."
+msgstr ""
+
+#: includes/class-auth.php:81
+msgid "User not found or inactive."
+msgstr ""
+
+#: includes/class-auth.php:89
+msgid "User does not have permission to publish AutoBlogr posts."
+msgstr ""
+
+#: includes/class-auth.php:108
+msgid "X-AutoBlogr-Signature header is required."
+msgstr ""
+
+#: includes/class-auth.php:126
+msgid "Request body is required for signature verification."
+msgstr ""
+
+#: includes/class-auth.php:141
+msgid "Invalid HMAC signature."
+msgstr ""
+
+#: includes/class-auth.php:170
+msgid "WordPress security salts are not configured."
+msgstr ""
+
+#: includes/class-auth.php:179
+msgid "Failed to encrypt HMAC secret."
+msgstr ""
+
+#: includes/class-auth.php:196
+msgid "WordPress security salts are not configured."
+msgstr ""
+
+#: includes/class-auth.php:205
+msgid "Failed to decrypt HMAC secret."
+msgstr ""
+
+#: includes/class-cron-handler.php:109
+msgid "Image URL must use HTTPS."
+msgstr ""
+
+#: auto-blogr.php:95
+msgid "AutoBlogr Posts"
+msgstr ""
+
+#: auto-blogr.php:96
+msgid "AutoBlogr Posts"
+msgstr ""
+
+#: auto-blogr.php:105
+msgid "AutoBlogr Settings"
+msgstr ""
+
+#: auto-blogr.php:106
+msgid "Settings"
+msgstr ""
+
+#: includes/class-settings.php:112
+msgid "API Configuration"
+msgstr ""
+
+#: includes/class-settings.php:120
+msgid "Callback URL"
+msgstr ""
+
+#: includes/class-settings.php:127
+msgid "Callback API Key"
+msgstr ""
+
+#: includes/class-settings.php:134
+msgid "Publishing Configuration"
+msgstr ""
+
+#: includes/class-settings.php:142
+msgid "Default Post Status"
+msgstr ""
+
+#: includes/class-settings.php:149
+msgid "Default Post Type"
+msgstr ""
+
+#: includes/class-settings.php:156
+msgid "Default Author"
+msgstr ""
+
+#: includes/class-settings.php:163
+msgid "Log Level"
+msgstr ""
+
+#: includes/class-settings.php:255
+msgid "Manage AI-published posts and monitor publishing status."
+msgstr ""
+
+#: includes/class-settings.php:264
+msgid "AutoBlogr Settings"
+msgstr ""
+
+#: includes/class-settings.php:278
+msgid "Configure API endpoints and authentication for AutoBlogr integration."
+msgstr ""
+
+#: includes/class-settings.php:287
+msgid "Configure default publishing behavior and logging preferences."
+msgstr ""
+
+#: includes/class-settings.php:298
+msgid "URL to send status callbacks to AutoBlogr API."
+msgstr ""
+
+#: includes/class-settings.php:309
+msgid "API key for authenticating callback requests."
+msgstr ""
+
+#: includes/class-settings.php:322
+msgid "Draft"
+msgstr ""
+
+#: includes/class-settings.php:323
+msgid "Pending Review"
+msgstr ""
+
+#: includes/class-settings.php:324
+msgid "Published"
+msgstr ""
+
+#: includes/class-settings.php:369
+msgid "Errors Only"
+msgstr ""
+
+#: includes/class-settings.php:370
+msgid "All Actions"
+msgstr ""
+
+#: includes/class-rest-controller.php:133
+msgid "Authentication required."
+msgstr ""
+
+#: includes/class-rest-controller.php:143
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/class-rest-controller.php:151
+msgid "Invalid request signature."
+msgstr ""
+
+#: includes/class-rest-controller.php:186
+msgid "Failed to schedule post for publishing."
+msgstr ""
+
+#: includes/class-rest-controller.php:196
+msgid "Post queued for publishing."
+msgstr ""
+
+#: includes/class-rest-controller.php:305
+msgid "Title cannot be empty."
+msgstr ""
+
+#: includes/class-rest-controller.php:312
+msgid "Title cannot exceed 200 characters."
+msgstr ""
+
+#: includes/class-rest-controller.php:331
+msgid "Invalid image URL format."
+msgstr ""
+
+#: includes/class-rest-controller.php:337
+msgid "Image URL must use HTTPS."
+msgstr ""
+
+#: includes/class-rest-controller.php:353
+msgid "Invalid post status. Must be one of: %s"
+msgstr ""
+
+#: includes/class-rest-controller.php:369
+msgid "Invalid post type."
+msgstr ""
+
+#: includes/class-rest-controller.php:375
+msgid "Post type must be public."
+msgstr ""
+
+#: includes/class-rest-controller.php:389
+msgid "Invalid author ID."
+msgstr ""
+
+#: includes/class-rest-controller.php:396
+msgid "Author does not have permission to publish posts."
+msgstr ""
+
+#: includes/class-cron-handler.php:338
+msgid "Image URL must use HTTPS."
+msgstr ""
+
+#: includes/class-cron-handler.php:433
+msgid "[%s] AutoBlogr: Post Publishing Failed"
+msgstr ""
+
+#: includes/class-cron-handler.php:439
+msgid ""
+"A blog post failed to publish after multiple attempts.\n"
+"\n"
+"Task ID: %1$s\n"
+"Post Title: %2$s\n"
+"Error: %3$s\n"
+"\n"
+"Please check the AutoBlogr settings and logs for more details: %4$s"
+msgstr ""
+
+#: includes/class-cron-handler.php:450
+msgid "Unknown"
+msgstr ""
+
+#: includes/class-callback-handler.php:154
+msgid "HTTP %1$d: %2$s"
+msgstr ""
+
+#: includes/class-callback-handler.php:219
+msgid "[%s] AutoBlogr: Callback Failed"
+msgstr ""
+
+#: includes/class-callback-handler.php:225
+msgid ""
+"A status callback failed to send after multiple attempts.\n"
+"\n"
+"Task ID: %1$s\n"
+"Status: %2$s\n"
+"Error: %3$s\n"
+"\n"
+"Please check your callback URL and API key settings: %4$s"
+msgstr ""
+
+#: includes/class-callback-handler.php:234
+msgid "Unknown"
+msgstr ""
