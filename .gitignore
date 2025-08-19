@@ -1,0 +1,61 @@
+# WordPress Core Files
+wp-admin/
+wp-includes/
+wp-content/uploads/
+wp-content/cache/
+wp-content/plugins/index.php
+wp-content/themes/index.php
+wp-config.php
+wp-config-sample.php
+.htaccess
+
+# Plugin-specific
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Development
+node_modules/
+.vscode/
+.idea/
+*.sublime-*
+
+# Composer
+vendor/
+composer.lock
+
+# Testing
+phpunit.xml
+.phpunit.result.cache
+tests/_output/
+coverage/
+
+# Environment
+.env
+.env.local
+.env.production
+.env.staging
+
+# OS Generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+assets/js/build/
+assets/css/build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+autoblogr-logs/
