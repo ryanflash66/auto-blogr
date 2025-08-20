@@ -42,14 +42,5 @@ AutoBlogr is a WordPress plugin that enables secure, automated publishing of AI-
 - Code coverage ≥80%
 - Static analysis via PHPStan
 
-## Contributing
-Pull requests and issues are welcome. Please follow WordPress and PSR-4 coding standards.
-
-## License
-GPLv2 or later
-
 ## Author
-Ryan F. | vibeCoded
-
----
-For full specs and coding rules, see `AGENTS.md` and the handoff document.
+Ryan B.
