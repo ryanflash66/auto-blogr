@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { WordPressSite } from "@/entities/WordPressSite";
-import { BlogPost } from "@/entities/BlogPost";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { WordPressSite } from "@/services/wordpressSites";
+import { BlogPost } from "@/services/blogPosts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   X, 
@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Image as ImageIcon,
   Tag,
   Folder,
   Clock,
@@ -29,7 +28,7 @@ const uploadMediaToWordPress = async (baseUrl, auth, imageUrl, altText) => {
     const res = await fetch(imageUrl);
     if (!res.ok) throw new Error("Failed to fetch image");
     const blob = await res.blob();
-    const filename = "hero-image.jpg"; // Simple default name
+    const filename = "hero-image.jpg";
     const file = new File([blob], filename, { type: blob.type });
 
     const formData = new FormData();
@@ -40,7 +39,6 @@ const uploadMediaToWordPress = async (baseUrl, auth, imageUrl, altText) => {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${auth}`,
-        // Content-Disposition header might be needed by some setups but usually FormData handles it
       },
       body: formData
     });
@@ -60,7 +58,6 @@ const resolveWPTerm = async (baseUrl, auth, taxonomy, termName) => {
   const cleanName = termName.trim();
   
   try {
-    // 1. Search for existing
     const searchUrl = `${baseUrl}/wp-json/wp/v2/${taxonomy}?search=${encodeURIComponent(cleanName)}`;
     const searchRes = await fetch(searchUrl, {
       headers: { 'Authorization': `Basic ${auth}` }
@@ -72,7 +69,6 @@ const resolveWPTerm = async (baseUrl, auth, taxonomy, termName) => {
       if (existing) return existing.id;
     }
 
-    // 2. Create new
     const createRes = await fetch(`${baseUrl}/wp-json/wp/v2/${taxonomy}`, {
       method: 'POST',
       headers: {
@@ -93,19 +89,19 @@ const resolveWPTerm = async (baseUrl, auth, taxonomy, termName) => {
 };
 
 export default function PublishModal({ post, onClose, onPublishSuccess }) {
+  const { user } = useAuth();
   const [sites, setSites] = useState([]);
   const [selectedSiteId, setSelectedSiteId] = useState("");
   const [categories, setCategories] = useState("");
   const [tags, setTags] = useState(post.tags?.join(", ") || "");
   const [customExcerpt, setCustomExcerpt] = useState(post.excerpt || "");
   const [publishing, setPublishing] = useState(false);
-  const [publishStep, setPublishStep] = useState('idle'); // idle, uploading, terms, publishing, success
+  const [publishStep, setPublishStep] = useState('idle');
   const [statusMessage, setStatusMessage] = useState("");
   const [error, setError] = useState(null);
   const [loadingSites, setLoadingSites] = useState(true);
   const [scheduleEnabled, setScheduleEnabled] = useState(post.status === 'scheduled');
   
-  // Initialize schedule values if they exist
   const initialDate = post.scheduled_publish_date ? format(new Date(post.scheduled_publish_date), 'yyyy-MM-dd') : "";
   const initialTime = post.scheduled_publish_date ? format(new Date(post.scheduled_publish_date), 'HH:mm') : "";
   
@@ -113,12 +109,16 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
   const [scheduledTime, setScheduledTime] = useState(initialTime);
 
   useEffect(() => {
-    loadWordPressSites();
-  }, []);
+    if (user?.id) {
+      loadWordPressSites();
+    }
+  }, [user?.id]);
 
   const loadWordPressSites = async () => {
+    if (!user?.id) return;
+    
     try {
-      const connectedSites = await WordPressSite.filter({ 
+      const connectedSites = await WordPressSite.filter(user.id, { 
         connection_status: 'connected',
         is_active: true 
       });
@@ -155,12 +155,10 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
       const selectedSite = sites.find(s => s.id === selectedSiteId);
       if (!selectedSite) throw new Error("Selected site not found");
       
-      // Prepare the scheduled date/time
       let scheduledDateTime = null;
       if (scheduleEnabled) {
         scheduledDateTime = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
         
-        // Validate that scheduled time is in the future
         if (new Date(scheduledDateTime) <= new Date()) {
           setError("Scheduled time must be in the future");
           setPublishing(false);
@@ -172,13 +170,11 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
       const baseUrl = selectedSite.url.replace(/\/$/, "");
       const auth = btoa(`${selectedSite.username}:${selectedSite.api_key}`);
       
-      // 1. Upload Featured Image (if exists)
       let featuredMediaId = 0;
       if (post.hero_image_url) {
         featuredMediaId = await uploadMediaToWordPress(baseUrl, auth, post.hero_image_url, post.hero_image_alt);
       }
 
-      // 2. Resolve Categories (Convert names to IDs)
       setPublishStep('terms');
       setStatusMessage("Configuring categories and tags...");
       
@@ -189,7 +185,6 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
         if (id) categoryIds.push(id);
       }
 
-      // 3. Resolve Tags (Convert names to IDs)
       const tagNames = tags.split(",").map(t => t.trim()).filter(t => t);
       const tagIds = [];
       for (const name of tagNames) {
@@ -197,7 +192,6 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
         if (id) tagIds.push(id);
       }
 
-      // 4. Create Post
       setPublishStep('publishing');
       setStatusMessage(scheduleEnabled ? "Scheduling post..." : "Publishing post...");
       
@@ -231,7 +225,6 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
 
       const wpPost = await response.json();
       
-      // Update the blog post with WordPress information
       const updateData = {
         status: scheduleEnabled ? 'scheduled' : 'published',
         wordpress_site_id: selectedSiteId,
@@ -250,7 +243,6 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
       setPublishStep('success');
       setStatusMessage(scheduleEnabled ? "Post successfully scheduled!" : "Post successfully published!");
       
-      // Slight delay before closing or calling success
       setTimeout(() => {
         onPublishSuccess();
         onClose();

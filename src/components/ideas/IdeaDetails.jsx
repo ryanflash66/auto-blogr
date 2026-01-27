@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 import { createPageUrl } from "@/utils";
-import { BlogIdea } from "@/entities/BlogIdea";
-import { BlogPost } from "@/entities/BlogPost";
-import { InvokeLLM, GenerateImage } from "@/integrations/Core";
+import { BlogIdea } from "@/services/blogIdeas";
+import { BlogPost } from "@/services/blogPosts";
+import { InvokeLLM, GenerateImage } from "@/lib/openrouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,18 +15,20 @@ import {
   Hash, 
   Calendar,
   Sparkles,
-  Image as ImageIcon,
   FileText,
   Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 
 export default function IdeaDetails({ idea, onUpdate }) {
+  const { user } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
   const navigate = useNavigate();
 
   const handleGenerateContent = async () => {
+    if (!user?.id) return;
+    
     setIsGenerating(true);
     
     try {
@@ -73,19 +76,25 @@ export default function IdeaDetails({ idea, onUpdate }) {
         setGenerationProgress(`Generating hero image for variation ${i}...`);
         
         // Generate hero image
-        const imagePrompt = `Create a professional, high-quality hero image for a blog post titled "${contentResult.seo_title}". The image should be visually appealing, relevant to the topic, and suitable for a business blog. Style: modern, clean, professional.`;
-        
-        const imageResult = await GenerateImage({
-          prompt: imagePrompt
-        });
+        let imageUrl = '';
+        try {
+          const imagePrompt = `Create a professional, high-quality hero image for a blog post titled "${contentResult.seo_title}". The image should be visually appealing, relevant to the topic, and suitable for a business blog. Style: modern, clean, professional.`;
+          
+          const imageResult = await GenerateImage({
+            prompt: imagePrompt
+          });
+          imageUrl = imageResult.url;
+        } catch (imgError) {
+          console.warn('Image generation failed, continuing without image:', imgError);
+        }
 
         // Save the generated blog post
-        await BlogPost.create({
+        await BlogPost.create(user.id, {
           blog_idea_id: idea.id,
           title: contentResult.seo_title,
           content: contentResult.content,
           excerpt: contentResult.excerpt,
-          hero_image_url: imageResult.url,
+          hero_image_url: imageUrl,
           hero_image_alt: contentResult.hero_image_alt,
           variation_number: i,
           status: 'ready',

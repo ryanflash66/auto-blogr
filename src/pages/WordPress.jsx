@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { WordPressSite } from "@/entities/WordPressSite";
+import { useAuth } from "@/lib/AuthContext";
+import { WordPressSite } from "@/services/wordpressSites";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -7,18 +8,23 @@ import SiteForm from "../components/wordpress/SiteForm";
 import SiteList from "../components/wordpress/SiteList";
 
 export default function WordPress() {
+  const { user } = useAuth();
   const [sites, setSites] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingSite, setEditingSite] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadSites();
-  }, []);
+    if (user?.id) {
+      loadSites();
+    }
+  }, [user?.id]);
 
   const loadSites = async () => {
+    if (!user?.id) return;
+    
     try {
-      const data = await WordPressSite.list('-created_date');
+      const data = await WordPressSite.list(user.id, '-created_at');
       setSites(data);
     } catch (error) {
       console.error("Error loading sites:", error);
@@ -28,11 +34,13 @@ export default function WordPress() {
   };
 
   const handleSiteSubmit = async (siteData) => {
+    if (!user?.id) return;
+    
     try {
       if (editingSite) {
         await WordPressSite.update(editingSite.id, siteData);
       } else {
-        await WordPressSite.create(siteData);
+        await WordPressSite.create(user.id, siteData);
       }
       setShowForm(false);
       setEditingSite(null);

@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { BlogPost } from "@/entities/BlogPost";
-import { BlogIdea } from "@/entities/BlogIdea";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { BlogPost } from "@/services/blogPosts";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
@@ -12,25 +11,30 @@ import SEOAnalyzer from "../components/posts/SEOAnalyzer";
 import ContentAnalyzer from "../components/posts/ContentAnalyzer";
 
 export default function Posts() {
+  const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("-created_date");
+  const [sortBy, setSortBy] = useState("-created_at");
 
   useEffect(() => {
-    loadPosts();
-  }, [sortBy]);
+    if (user?.id) {
+      loadPosts();
+    }
+  }, [user?.id, sortBy]);
 
   useEffect(() => {
     filterPosts();
   }, [posts, searchTerm, statusFilter]);
 
   const loadPosts = async () => {
+    if (!user?.id) return;
+    
     try {
-      const data = await BlogPost.list(sortBy);
+      const data = await BlogPost.list(user.id, sortBy);
       setPosts(data);
     } catch (error) {
       console.error("Error loading posts:", error);
@@ -111,8 +115,8 @@ export default function Posts() {
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="-created_date">Newest First</SelectItem>
-            <SelectItem value="created_date">Oldest First</SelectItem>
+            <SelectItem value="-created_at">Newest First</SelectItem>
+            <SelectItem value="created_at">Oldest First</SelectItem>
             <SelectItem value="title">Title A-Z</SelectItem>
             <SelectItem value="-title">Title Z-A</SelectItem>
             <SelectItem value="-word_count">Longest First</SelectItem>

@@ -1,8 +1,6 @@
-import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState } from "react";
+import { InvokeLLM } from "@/lib/openrouter";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { 
   X, 
   Wand2, 
@@ -33,7 +31,7 @@ export default function ToneRephraser({ content, onApply, onClose }) {
     setRephrasedContent("");
 
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await InvokeLLM({
         prompt: `Rephrase the following content in a ${tone.label.toLowerCase()} tone. ${tone.description}.
 
 Original Content:
@@ -146,7 +144,7 @@ Return only the rephrased content without any additional commentary. Do not wrap
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
                       <Sparkles className="w-12 h-12 text-purple-300 mx-auto mb-3" />
-                      <p className="text-sm text-gray-500">Choose a tone below to see the magic ✨</p>
+                      <p className="text-sm text-gray-500">Choose a tone below to see the magic</p>
                     </div>
                   </div>
                 )}

@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { WordPressSite } from "@/entities/WordPressSite";
+import { useState } from "react";
+import { WordPressSite } from "@/services/wordpressSites";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,85 +8,83 @@ import {
   Settings, 
   CheckCircle2, 
   XCircle, 
-  AlertCircle,
-  Calendar,
-  ExternalLink,
   RefreshCw,
-  Loader2
+  Loader2,
+  Trash2,
+  ExternalLink
 } from "lucide-react";
-import { format } from "date-fns";
 
 export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
-  const [testingId, setTestingId] = useState(null);
-  const navigate = useNavigate();
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'connected': return <CheckCircle2 className="w-4 h-4" />;
-      case 'error': return <XCircle className="w-4 h-4" />;
-      default: return <AlertCircle className="w-4 h-4" />;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'connected': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'error': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-amber-100 text-amber-800 border-amber-200';
-    }
-  };
+  const [testingConnection, setTestingConnection] = useState(null);
+  const [deletingSite, setDeletingSite] = useState(null);
 
   const handleTestConnection = async (site) => {
-    setTestingId(site.id);
+    setTestingConnection(site.id);
+    
     try {
-      const baseUrl = site.url.replace(/\/$/, "");
-      const auth = btoa(`${site.username}:${site.api_key}`);
+      const result = await WordPressSite.testConnection(site);
       
-      // Test request to users/me endpoint to verify credentials
-      const response = await fetch(`${baseUrl}/wp-json/wp/v2/users/me`, {
-        headers: {
-          'Authorization': `Basic ${auth}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // If successful, update status to connected
       await WordPressSite.update(site.id, {
-        connection_status: 'connected',
-        last_tested: new Date().toISOString()
+        connection_status: result.success ? 'connected' : 'error',
+        last_sync_at: new Date().toISOString()
       });
       
-      if (onRefresh) onRefresh();
+      onRefresh();
     } catch (error) {
-      console.error("Connection test failed:", error);
-      // If failed, update status to error
-      await WordPressSite.update(site.id, {
-        connection_status: 'error',
-        last_tested: new Date().toISOString()
-      });
-      if (onRefresh) onRefresh();
+      console.error("Error testing connection:", error);
     } finally {
-      setTestingId(null);
+      setTestingConnection(null);
+    }
+  };
+
+  const handleDeleteSite = async (siteId) => {
+    if (!confirm('Are you sure you want to delete this WordPress site?')) return;
+    
+    setDeletingSite(siteId);
+    try {
+      await WordPressSite.delete(siteId);
+      onRefresh();
+    } catch (error) {
+      console.error("Error deleting site:", error);
+    } finally {
+      setDeletingSite(null);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'connected':
+        return (
+          <Badge className="bg-emerald-100 text-emerald-800">
+            <CheckCircle2 className="w-3 h-3 mr-1" />
+            Connected
+          </Badge>
+        );
+      case 'error':
+        return (
+          <Badge className="bg-red-100 text-red-800">
+            <XCircle className="w-3 h-3 mr-1" />
+            Error
+          </Badge>
+        );
+      default:
+        return (
+          <Badge className="bg-gray-100 text-gray-800">
+            Not Connected
+          </Badge>
+        );
     }
   };
 
   if (loading) {
     return (
-      <div className="grid gap-6">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i} className="animate-pulse">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="border-0 shadow-lg animate-pulse">
             <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="h-6 bg-gray-200 rounded mb-2 w-1/3"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-2 w-1/2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                </div>
-                <div className="h-6 bg-gray-200 rounded w-20"></div>
-              </div>
+              <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
             </CardContent>
           </Card>
         ))}
@@ -98,122 +94,93 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
 
   if (sites.length === 0) {
     return (
-      <Card className="border-2 border-dashed border-gray-200">
+      <Card className="border-0 shadow-lg">
         <CardContent className="p-12 text-center">
           <Globe className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">No WordPress sites connected</h3>
-          <p className="text-gray-500 mb-6">Connect your first WordPress site to start publishing AI-generated content</p>
-          <Button className="bg-gradient-to-r from-emerald-600 to-emerald-700">
-            Connect Your First Site
-          </Button>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No WordPress Sites</h3>
+          <p className="text-gray-600 max-w-md mx-auto">
+            Connect your WordPress sites to publish content directly from AutoBlogr.
+          </p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="grid gap-6">
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {sites.map((site) => (
         <Card key={site.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-          <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-gray-100">
-            <div className="flex items-center justify-between">
+          <CardHeader className="pb-2">
+            <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                   <Globe className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <CardTitle className="text-lg">{site.name}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                    <a
-                      href={site.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1"
-                    >
-                      {site.url}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
+                  {getStatusBadge(site.connection_status)}
                 </div>
               </div>
-              <Badge className={`${getStatusColor(site.connection_status)} border`}>
-                {getStatusIcon(site.connection_status)}
-                <span className="ml-1 capitalize">{site.connection_status}</span>
-              </Badge>
             </div>
           </CardHeader>
+          
+          <CardContent className="space-y-4">
+            <div>
+              <a 
+                href={site.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              >
+                {site.url}
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
 
-          <CardContent className="p-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Site Details */}
-              <div className="space-y-3">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-1">Connection Details</h4>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      Added {format(new Date(site.created_date), 'MMM d, yyyy')}
-                    </div>
-                    {site.last_tested && (
-                      <div className="flex items-center gap-2">
-                        <RefreshCw className="w-4 h-4 text-gray-400" />
-                        Last tested {format(new Date(site.last_tested), 'MMM d, yyyy')}
-                      </div>
-                    )}
-                  </div>
-                </div>
+            {site.default_category && (
+              <p className="text-sm text-gray-600">
+                Default Category: <span className="font-medium">{site.default_category}</span>
+              </p>
+            )}
 
-                {/* Default Settings */}
-                {(site.default_category || site.default_author) && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-1">Default Settings</h4>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      {site.default_category && (
-                        <div>Category: {site.default_category}</div>
-                      )}
-                      {site.default_author && (
-                        <div>Author: {site.default_author}</div>
-                      )}
-                    </div>
-                  </div>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleTestConnection(site)}
+                disabled={testingConnection === site.id}
+              >
+                {testingConnection === site.id ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 mr-1" />
                 )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex flex-col gap-3">
-                <Button
-                  onClick={() => handleTestConnection(site)}
-                  variant="outline"
-                  disabled={testingId === site.id}
-                  className="flex items-center gap-2"
-                >
-                  {testingId === site.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-4 h-4" />
-                  )}
-                  {testingId === site.id ? "Testing..." : "Test Connection"}
-                </Button>
-                
-                <Button
-                  onClick={() => onEditSite(site)}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <Settings className="w-4 h-4" />
-                  Edit Settings
-                </Button>
-
-                {site.is_active && site.connection_status === 'connected' && (
-                  <Button 
-                    onClick={() => navigate(createPageUrl("Posts"))}
-                    className="bg-emerald-600 hover:bg-emerald-700 flex items-center gap-2"
-                  >
-                    <Globe className="w-4 h-4" />
-                    Publish Content
-                  </Button>
+                Test
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEditSite(site)}
+              >
+                <Settings className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDeleteSite(site.id)}
+                disabled={deletingSite === site.id}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                {deletingSite === site.id ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4 mr-1" />
                 )}
-              </div>
+                Delete
+              </Button>
             </div>
           </CardContent>
         </Card>

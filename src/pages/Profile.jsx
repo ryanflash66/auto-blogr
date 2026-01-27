@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { User } from "@/entities/User";
+import { useAuth } from "@/lib/AuthContext";
+import { User } from "@/services/users";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,7 +20,7 @@ import {
 } from "lucide-react";
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
+  const { user, clerkUser } = useAuth();
   const [formData, setFormData] = useState({
     business_name: "",
     business_description: "",
@@ -38,28 +39,27 @@ export default function Profile() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    loadUserData();
-  }, []);
+    if (user) {
+      loadUserData();
+    }
+  }, [user]);
 
   const loadUserData = async () => {
     try {
-      const userData = await User.me();
-      setUser(userData);
-      
       // Populate form with existing data
       setFormData(prev => ({
         ...prev,
-        business_name: userData.business_name || "",
-        business_description: userData.business_description || "",
-        industry: userData.industry || "",
-        target_audience: userData.target_audience || "",
-        brand_voice: userData.brand_voice || "professional",
+        business_name: user.business_name || "",
+        business_description: user.business_description || "",
+        industry: user.industry || "",
+        target_audience: user.target_audience || "",
+        brand_voice: user.brand_voice || "professional",
         content_preferences: {
-          preferred_length: userData.content_preferences?.preferred_length || "medium",
-          include_images: userData.content_preferences?.include_images ?? true,
-          seo_focused: userData.content_preferences?.seo_focused ?? true
+          preferred_length: user.content_preferences?.preferred_length || "medium",
+          include_images: user.content_preferences?.include_images ?? true,
+          seo_focused: user.content_preferences?.seo_focused ?? true
         },
-        timezone: userData.timezone || "UTC"
+        timezone: user.timezone || "UTC"
       }));
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -70,10 +70,12 @@ export default function Profile() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!user?.clerk_id) return;
+    
     setSaving(true);
     
     try {
-      await User.updateMyUserData(formData);
+      await User.updateMyUserData(user.clerk_id, formData);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -115,14 +117,14 @@ export default function Profile() {
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Profile Settings</h1>
             <p className="text-lg text-gray-600 mt-1">Customize your AI content generation preferences</p>
           </div>
-          {user && (
+          {clerkUser && (
             <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 rounded-lg">
               <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full flex items-center justify-center">
                 <UserIcon className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">{user.full_name}</p>
-                <p className="text-sm text-gray-600">{user.email}</p>
+                <p className="font-medium text-gray-900">{clerkUser.fullName}</p>
+                <p className="text-sm text-gray-600">{clerkUser.primaryEmailAddress?.emailAddress}</p>
               </div>
             </div>
           )}

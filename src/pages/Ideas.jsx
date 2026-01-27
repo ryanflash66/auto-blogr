@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { BlogIdea } from "@/entities/BlogIdea";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { BlogIdea } from "@/services/blogIdeas";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -8,18 +9,23 @@ import IdeaList from "../components/ideas/IdeaList";
 import IdeaDetails from "../components/ideas/IdeaDetails";
 
 export default function Ideas() {
+  const { user } = useAuth();
   const [ideas, setIdeas] = useState([]);
   const [selectedIdea, setSelectedIdea] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadIdeas();
-  }, []);
+    if (user?.id) {
+      loadIdeas();
+    }
+  }, [user?.id]);
 
   const loadIdeas = async () => {
+    if (!user?.id) return;
+    
     try {
-      const data = await BlogIdea.list('-created_date');
+      const data = await BlogIdea.list(user.id, '-created_at');
       setIdeas(data);
       
       if (selectedIdea) {
@@ -36,8 +42,10 @@ export default function Ideas() {
   };
 
   const handleIdeaSubmit = async (ideaData) => {
+    if (!user?.id) return;
+    
     try {
-      await BlogIdea.create(ideaData);
+      await BlogIdea.create(user.id, ideaData);
       setShowForm(false);
       loadIdeas();
     } catch (error) {

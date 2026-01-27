@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState } from "react";
+import { InvokeLLM } from "@/lib/openrouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,7 @@ export default function SEOAnalyzer({ post, onImprove }) {
   const analyzeSEO = async () => {
     setAnalyzing(true);
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await InvokeLLM({
         prompt: `Analyze the SEO quality of this blog post and provide a score out of 100 and specific suggestions for improvement.
 
 Title: ${post.title}
@@ -71,7 +71,7 @@ Provide a detailed SEO analysis focusing on:
   const improveSEO = async () => {
     setImproving(true);
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await InvokeLLM({
         prompt: `Improve this blog post's SEO based on the following analysis:
 
 Current Title: ${post.title}

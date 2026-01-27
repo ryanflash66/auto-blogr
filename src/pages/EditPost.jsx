@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
-import { BlogPost } from "@/entities/BlogPost";
-import { BlogPostVersion } from "@/entities/BlogPostVersion";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { BlogPost } from "@/services/blogPosts";
+import { BlogPostVersion } from "@/services/blogPostVersions";
+import { InvokeLLM } from "@/lib/openrouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,7 @@ import 'react-quill/dist/quill.snow.css';
 import PublishModal from "../components/posts/PublishModal";
 
 export default function EditPost() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -27,7 +29,7 @@ export default function EditPost() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [generatingSEO, setGeneratingSEO] = useState({ seo_title: false, meta_description: false });
   const [post, setPost] = useState(null);
-  const [lastSavedVersion, setLastSavedVersion] = useState(null); // Track last saved version timestamp
+  const [lastSavedVersion, setLastSavedVersion] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -42,60 +44,47 @@ export default function EditPost() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
-    if (id) {
+    if (id && user?.id) {
       loadPost(id);
-    } else {
+    } else if (!id) {
       navigate(createPageUrl("Posts"));
     }
-  }, []);
+  }, [user?.id]);
 
   const loadPost = async (id) => {
+    if (!user?.id) return;
+    
     try {
-      // Fetch specific post
-      const posts = await BlogPost.filter({ id });
+      const posts = await BlogPost.filter(user.id, { id });
       if (posts && posts.length > 0) {
         const currentPost = posts[0];
         setPost(currentPost);
 
-        // Helper for regex escaping
         const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
         let cleanContent = currentPost.content || "";
         const title = currentPost.title || "";
         const altText = currentPost.hero_image_alt || "";
 
-        // 1. Remove Title artifacts (Double or Single) at the start
         if (title) {
           const escapedTitle = escapeRegExp(title);
-          // Remove "TitleTitle" at start
           const doubleTitleRegex = new RegExp(`^${escapedTitle}${escapedTitle}\\s*`, 'i');
           cleanContent = cleanContent.replace(doubleTitleRegex, "");
-          
-          // Remove "Title" at start
           const singleTitleRegex = new RegExp(`^${escapedTitle}\\s*`, 'i');
           cleanContent = cleanContent.replace(singleTitleRegex, "");
         }
 
-        // 2. Remove broken images containing the alt text
         if (altText) {
            const escapedAlt = escapeRegExp(altText);
-           // Remove <img ... alt="altText" ... > anywhere in content
            const imgWithAltRegex = new RegExp(`<img[^>]*alt=["']?${escapedAlt}["']?[^>]*>`, 'gi');
            cleanContent = cleanContent.replace(imgWithAltRegex, "");
-           
-           // Remove the alt text if it appears as plain text at the start
            const plainAltRegex = new RegExp(`^\\s*${escapedAlt}\\s*`, 'i');
            cleanContent = cleanContent.replace(plainAltRegex, "");
-
-           // Remove alt text wrapped in p tags at start
            const pAltRegex = new RegExp(`^\\s*<p>\\s*${escapedAlt}\\s*<\\/p>`, 'i');
            cleanContent = cleanContent.replace(pAltRegex, "");
         }
 
-        // 3. Remove any remaining leading image tags (common artifact)
         cleanContent = cleanContent.replace(/^\s*(<p>)?\s*<img[^>]*>\s*(<\/p>)?/i, "");
-        
-        // 4. Cleanup empty paragraphs at start
         cleanContent = cleanContent.replace(/^\s*<p>\s*<br>\s*<\/p>\s*/i, "");
 
         setFormData({
@@ -127,15 +116,12 @@ export default function EditPost() {
     const updatedData = {
       ...formData,
       tags: tagsArray,
-      // Recalculate word count roughly
       word_count: formData.content.replace(/<[^>]*>/g, '').split(/\s+/).length
     };
 
     await BlogPost.update(post.id, updatedData);
     
-    // Create a new version record
     try {
-      // Get the count of existing versions to set the next version number
       const existingVersions = await BlogPostVersion.filter({ blog_post_id: post.id });
       const nextVersionNum = existingVersions.length + 1;
 
@@ -148,13 +134,11 @@ export default function EditPost() {
         change_type: 'manual_save'
       });
       
-      // Update state to trigger VersionHistory refresh
       setLastSavedVersion(new Date().toISOString());
     } catch (verError) {
       console.error("Failed to create version history:", verError);
     }
     
-    // Update local post state with saved data to ensure PublishModal gets latest
     const updatedPost = { ...post, ...updatedData };
     setPost(updatedPost);
     return updatedPost;
@@ -186,7 +170,7 @@ export default function EditPost() {
   const generateSEOTitle = async () => {
     setGeneratingSEO({ ...generatingSEO, seo_title: true });
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await InvokeLLM({
         prompt: `Generate an SEO-optimized title for this blog post. The title should be catchy, include relevant keywords, and be under 60 characters.
 
 Post Title: ${formData.title}
@@ -205,7 +189,7 @@ Generate only the SEO title, no additional text. Do not use quotation marks.`
   const generateMetaDescription = async () => {
     setGeneratingSEO({ ...generatingSEO, meta_description: true });
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await InvokeLLM({
         prompt: `Generate an SEO-optimized meta description for this blog post. It should be compelling, include relevant keywords, and be under 160 characters.
 
 Post Title: ${formData.title}
@@ -232,8 +216,6 @@ Generate only the meta description, no additional text. Do not use quotation mar
       seo_title: improvements.seo_title || prev.seo_title,
       meta_description: improvements.meta_description || prev.meta_description
     }));
-    // Note: improvements might contain content suggestions but we're not automatically applying them to content yet
-    // as it's a string update.
   };
 
   const handleRestoreVersion = (version) => {
@@ -243,7 +225,6 @@ Generate only the meta description, no additional text. Do not use quotation mar
       content: version.content || prev.content,
       excerpt: version.excerpt || prev.excerpt
     }));
-    // Optional: Show a toast or notification here
   };
 
   if (loading) {
