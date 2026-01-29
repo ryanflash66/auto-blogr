@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { useState } from "react";
+import { InvokeLLM } from "@/lib/openrouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,6 @@ import {
   Sparkles, 
   Loader2,
   CheckCircle2,
-  AlertCircle,
   Lightbulb,
   ChevronDown,
   ChevronUp
@@ -22,7 +21,7 @@ export default function ContentAnalyzer({ post, onApplyImprovement }) {
   const analyzeContent = async () => {
     setAnalyzing(true);
     try {
-      const response = await base44.integrations.Core.InvokeLLM({
+      const response = await InvokeLLM({
         prompt: `Analyze this blog post content and provide specific, actionable suggestions for improvement focusing on clarity, engagement, and flow.
 
 Title: ${post.title}

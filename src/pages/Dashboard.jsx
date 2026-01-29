@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { BlogIdea } from "@/entities/BlogIdea";
-import { BlogPost } from "@/entities/BlogPost";
-import { WordPressSite } from "@/entities/WordPressSite";
-import { User } from "@/entities/User";
+import { useAuth } from "@/lib/AuthContext";
+import { BlogIdea } from "@/services/blogIdeas";
+import { BlogPost } from "@/services/blogPosts";
+import { WordPressSite } from "@/services/wordpressSites";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { 
@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [stats, setStats] = useState({
     totalIdeas: 0,
     totalPosts: 0,
@@ -29,24 +30,23 @@ export default function Dashboard() {
   });
   const [recentIdeas, setRecentIdeas] = useState([]);
   const [recentPosts, setRecentPosts] = useState([]);
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    if (user?.id) {
+      loadDashboardData();
+    }
+  }, [user?.id]);
 
   const loadDashboardData = async () => {
+    if (!user?.id) return;
+    
     try {
-      // Load user data
-      const userData = await User.me();
-      setUser(userData);
-
       // Load stats
       const [ideas, posts, sites] = await Promise.all([
-        BlogIdea.list('-created_date', 50),
-        BlogPost.list('-created_date', 50),
-        WordPressSite.list('-created_date', 10)
+        BlogIdea.list(user.id, '-created_at', 50),
+        BlogPost.list(user.id, '-created_at', 50),
+        WordPressSite.list(user.id, '-created_at', 10)
       ]);
 
       setStats({

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User } from "@/entities/User";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,7 @@ import { X, Plus, Lightbulb, Target, Volume2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function IdeaForm({ onSubmit, onCancel }) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -44,13 +45,10 @@ export default function IdeaForm({ onSubmit, onCancel }) {
     setIsSubmitting(true);
     
     try {
-      // Get user data for defaults
-      const user = await User.me();
-      
       const ideaData = {
         ...formData,
-        target_audience: formData.target_audience || user.target_audience || "",
-        tone: formData.tone || user.brand_voice || "professional"
+        target_audience: formData.target_audience || user?.target_audience || "",
+        tone: formData.tone || user?.brand_voice || "professional"
       };
       
       await onSubmit(ideaData);

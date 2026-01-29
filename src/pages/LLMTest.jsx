@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { InvokeLLM } from '@/integrations/Core';
+import { InvokeLLM } from '@/lib/openrouter';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,12 +24,10 @@ export default function LLMTest() {
 
     try {
       const result = await InvokeLLM({ prompt });
-      // The result can be a string or an object if a schema is used.
-      // For this simple test, we'll assume it's a string and format it nicely.
-      setResponse(JSON.stringify(result, null, 2));
+      setResponse(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
     } catch (err) {
       console.error("Error invoking LLM:", err);
-      setError('Failed to get a response from the LLM. Please check the console for details.');
+      setError(err.message || 'Failed to get a response from the LLM. Please check the console for details.');
     } finally {
       setLoading(false);
     }
@@ -42,7 +40,7 @@ export default function LLMTest() {
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">LLM Integration Test</h1>
           <p className="text-lg text-gray-600 mt-1">
-            Use this page to send a raw prompt to the `InvokeLLM` integration and see the output.
+            Test the OpenRouter LLM integration by sending a raw prompt.
           </p>
         </div>
 
