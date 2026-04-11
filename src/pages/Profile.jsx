@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 export default function Profile() {
-  const { user, clerkUser } = useAuth();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     business_name: "",
     business_description: "",
@@ -70,12 +70,12 @@ export default function Profile() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!user?.clerk_id) return;
+    if (!user?.id) return;
     
     setSaving(true);
     
     try {
-      await User.updateMyUserData(user.clerk_id, formData);
+      await User.updateMyUserData(user.id, formData);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
@@ -117,14 +117,14 @@ export default function Profile() {
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Profile Settings</h1>
             <p className="text-lg text-gray-600 mt-1">Customize your AI content generation preferences</p>
           </div>
-          {clerkUser && (
+          {user && (
             <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 rounded-lg">
               <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full flex items-center justify-center">
                 <UserIcon className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">{clerkUser.fullName}</p>
-                <p className="text-sm text-gray-600">{clerkUser.primaryEmailAddress?.emailAddress}</p>
+                <p className="font-medium text-gray-900">{user.full_name || 'Local User'}</p>
+                <p className="text-sm text-gray-600">{user.email}</p>
               </div>
             </div>
           )}
