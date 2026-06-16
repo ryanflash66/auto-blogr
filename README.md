@@ -42,3 +42,27 @@ VITE_OPENROUTER_API_KEY=your_key_here
 - TailwindCSS + shadcn/ui
 - OpenRouter (AI)
 - Local Storage (data persistence)
+
+## WordPress Plugin (`wp-plugin/`)
+
+The repo also includes a standalone WordPress plugin that exposes a custom REST
+API for asynchronous post processing. In 30 seconds:
+
+- **Custom REST API** under `autoblogr/v1`: `POST /jobs` to submit work,
+  `GET /jobs/{id}` to read status (`wp-plugin/src/Rest/Controller.php`).
+- **Auth**: WordPress Application Passwords identify the user, and every request
+  must also carry an HMAC-SHA256 signature over the timestamp, method, path, and
+  body, with a 300 second freshness window to block replay and tampering
+  (`wp-plugin/src/Auth/Authenticator.php`, `wp-plugin/src/Hmac/Signer.php`).
+- **Async flow**: a submit request returns a job id immediately and schedules
+  the work with `wp_schedule_single_event` (WordPress deferred execution); when
+  the job finishes it POSTs a signed result to the caller's `callback_url`
+  (`wp-plugin/src/Jobs/PostProcessor.php`, `wp-plugin/src/Http/CallbackClient.php`).
+- **Tests**: 43 PHPUnit tests, measured line coverage **98.85% (172/174)** via
+  PCOV. CI enforces an 80 percent floor.
+- **CI/CD**: GitHub Actions runs the suite on every push and PR that touches the
+  plugin. Workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+See [`wp-plugin/README.md`](wp-plugin/README.md) for details and run
+instructions. The "async" processing uses WordPress cron style scheduling, not a
+separate worker daemon.
