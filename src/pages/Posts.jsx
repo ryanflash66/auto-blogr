@@ -102,8 +102,10 @@ export default function Posts() {
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
+            {/* Canonical post/idea status set: draft | generating | ready | published | scheduled */}
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="generating">Generating</SelectItem>
             <SelectItem value="ready">Ready</SelectItem>
             <SelectItem value="published">Published</SelectItem>
             <SelectItem value="scheduled">Scheduled</SelectItem>
