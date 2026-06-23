@@ -1,0 +1,530 @@
+// Posts.js - Generated posts management page component
+import React, { useState, useEffect } from "react";
+import { BlogPost } from "@/entities/BlogPost";
+import { BlogIdea } from "@/entities/BlogIdea";
+import { WordPressSite } from "@/entities/WordPressSite";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Search,
+  Filter,
+  Eye,
+  Edit3,
+  ExternalLink,
+  Calendar,
+  FileText,
+  Image,
+  ChevronDown,
+  Upload,
+  Globe,
+  CheckCircle2,
+  AlertTriangle,
+  Loader2,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { format } from "date-fns";
+
+export default function Posts() {
+  const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("-created_date");
+
+  // WordPress publishing state
+  const [wordpressSites, setWordpressSites] = useState([]);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [publishingPost, setPublishingPost] = useState(null);
+  const [selectedSite, setSelectedSite] = useState("");
+  const [publishStatus, setPublishStatus] = useState("draft");
+  const [publishing, setPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState(null);
+
+  useEffect(() => {
+    loadPosts();
+    loadWordPressSites();
+  }, []);
+
+  useEffect(() => {
+    filterAndSortPosts();
+  }, [posts, searchTerm, statusFilter, sortBy]);
+
+  const loadPosts = async () => {
+    try {
+      const data = await BlogPost.list(sortBy, 100);
+      setPosts(data);
+    } catch (error) {
+      console.error("Error loading posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadWordPressSites = async () => {
+    try {
+      const sites = await WordPressSite.findAll();
+      setWordpressSites(sites.filter((site) => site.status === "connected"));
+    } catch (error) {
+      console.error("Error loading WordPress sites:", error);
+    }
+  };
+
+  const handlePublishToWordPress = (post) => {
+    setPublishingPost(post);
+    setSelectedSite("");
+    setPublishStatus("draft");
+    setPublishResult(null);
+    setShowPublishDialog(true);
+  };
+
+  const handlePublishConfirm = async () => {
+    if (!selectedSite || !publishingPost) return;
+
+    setPublishing(true);
+    setPublishResult(null);
+
+    try {
+      const site = wordpressSites.find((s) => s.id === selectedSite);
+      if (!site) {
+        throw new Error("Selected WordPress site not found");
+      }
+
+      const result = await site.publishPost({
+        title: publishingPost.title,
+        content: publishingPost.content,
+        excerpt: publishingPost.excerpt,
+        status: publishStatus,
+        categories: publishingPost.categories || [],
+        tags: publishingPost.tags || [],
+      });
+
+      if (result.success) {
+        // Update post status
+        publishingPost.wordpress_post_id = result.post.id;
+        publishingPost.wordpress_url = result.post.link;
+        publishingPost.status =
+          publishStatus === "publish" ? "published" : "draft";
+        await publishingPost.save();
+
+        setPublishResult({
+          success: true,
+          message: result.message,
+          url: result.post.link,
+        });
+
+        // Reload posts to show updated status
+        await loadPosts();
+      }
+    } catch (error) {
+      console.error("Publishing error:", error);
+      setPublishResult({
+        success: false,
+        message: error.message,
+      });
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const filterAndSortPosts = () => {
+    let filtered = [...posts];
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (post) =>
+          post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((post) => post.status === statusFilter);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      if (sortBy.startsWith("-")) {
+        const field = sortBy.substring(1);
+        return new Date(b[field]) - new Date(a[field]);
+      } else {
+        return new Date(a[sortBy]) - new Date(b[sortBy]);
+      }
+    });
+
+    setFilteredPosts(filtered);
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "published":
+        return "bg-emerald-100 text-emerald-800";
+      case "ready":
+        return "bg-blue-100 text-blue-800";
+      case "draft":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 lg:p-8">
+        <div className="space-y-6 animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-64"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-64 bg-gray-200 rounded-xl"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 lg:p-8">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Generated Posts</h1>
+          <p className="text-muted-foreground">
+            Manage and publish your AI-generated blog content
+          </p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col lg:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Search posts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full lg:w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="ready">Ready</SelectItem>
+            <SelectItem value="published">Published</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-full lg:w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="-created_date">Newest First</SelectItem>
+            <SelectItem value="created_date">Oldest First</SelectItem>
+            <SelectItem value="title">Title A-Z</SelectItem>
+            <SelectItem value="-word_count">Word Count High</SelectItem>
+            <SelectItem value="word_count">Word Count Low</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Posts Grid */}
+      {filteredPosts.length === 0 ? (
+        <Card>
+          <CardContent className="py-16 text-center">
+            <FileText className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No posts found</h3>
+            <p className="text-muted-foreground mb-6">
+              {posts.length === 0
+                ? "Generate your first post from a blog idea"
+                : "Try adjusting your search or filter criteria"}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredPosts.map((post) => (
+            <Card
+              key={post.id}
+              className="group hover:shadow-lg transition-shadow"
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Badge className={getStatusColor(post.status)}>
+                      {post.status}
+                    </Badge>
+                    {post.wordpress_post_id && (
+                      <Badge
+                        variant="outline"
+                        className="text-blue-600 border-blue-200 bg-blue-50"
+                      >
+                        <Globe className="h-3 w-3 mr-1" />
+                        WordPress
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button size="sm" variant="ghost">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost">
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost">
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                    {/* Publish to WordPress Button */}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handlePublishToWordPress(post)}
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      title={
+                        post.wordpress_post_id
+                          ? "Re-publish to WordPress"
+                          : "Publish to WordPress"
+                      }
+                    >
+                      {post.wordpress_post_id ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                    </Button>
+                    {/* WordPress URL Button */}
+                    {post.wordpress_url && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          window.open(post.wordpress_url, "_blank")
+                        }
+                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        title="View on WordPress"
+                      >
+                        <Globe className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {post.hero_image_url && (
+                  <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                    <img
+                      src={post.hero_image_url}
+                      alt={post.hero_image_alt || post.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                <div>
+                  <h3 className="font-semibold line-clamp-2 mb-1">
+                    {post.title}
+                  </h3>
+                  {post.excerpt && (
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center space-x-1">
+                    <Calendar className="h-3 w-3" />
+                    <span>
+                      {format(new Date(post.created_date), "MMM d, yyyy")}
+                    </span>
+                  </div>
+                  {post.word_count && (
+                    <div className="flex items-center space-x-1">
+                      <FileText className="h-3 w-3" />
+                      <span>{post.word_count} words</span>
+                    </div>
+                  )}
+                </div>
+
+                {post.tags && post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {post.tags.slice(0, 3).map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                    {post.tags.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{post.tags.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* WordPress Publishing Dialog */}
+      <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Globe className="h-5 w-5 text-blue-600" />
+              <span>Publish to WordPress</span>
+            </DialogTitle>
+            <DialogDescription>
+              {publishingPost && (
+                <>Publish "{publishingPost.title}" to your WordPress site</>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {wordpressSites.length === 0 ? (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  No connected WordPress sites found. Please connect a WordPress
+                  site first.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <>
+                <div>
+                  <label className="text-sm font-medium">
+                    Select WordPress Site
+                  </label>
+                  <Select value={selectedSite} onValueChange={setSelectedSite}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Choose a WordPress site" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {wordpressSites.map((site) => (
+                        <SelectItem key={site.id} value={site.id}>
+                          <div className="flex items-center space-x-2">
+                            <Globe className="h-4 w-4" />
+                            <span>{site.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Post Status</label>
+                  <Select
+                    value={publishStatus}
+                    onValueChange={setPublishStatus}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="publish">Publish</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {publishResult && (
+                  <Alert
+                    className={
+                      publishResult.success
+                        ? "border-green-200 bg-green-50"
+                        : "border-red-200 bg-red-50"
+                    }
+                  >
+                    {publishResult.success ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                    )}
+                    <AlertDescription
+                      className={
+                        publishResult.success
+                          ? "text-green-800"
+                          : "text-red-800"
+                      }
+                    >
+                      {publishResult.message}
+                      {publishResult.success && publishResult.url && (
+                        <div className="mt-1">
+                          <a
+                            href={publishResult.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:no-underline"
+                          >
+                            View published post →
+                          </a>
+                        </div>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </>
+            )}
+          </div>
+
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowPublishDialog(false)}
+              disabled={publishing}
+            >
+              {publishResult?.success ? "Close" : "Cancel"}
+            </Button>
+            {wordpressSites.length > 0 && !publishResult?.success && (
+              <Button
+                onClick={handlePublishConfirm}
+                disabled={!selectedSite || publishing}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {publishing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Publishing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    {publishStatus === "publish" ? "Publish" : "Save as Draft"}
+                  </>
+                )}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

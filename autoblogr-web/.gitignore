@@ -1,0 +1,11 @@
+# Dependencies & build output
+node_modules/
+dist/
+
+# Vite temporary config artifacts
+*.timestamp-*.mjs
+
+# Local environment / secrets
+.env.local
+.env.local.new
+.env.*.local
