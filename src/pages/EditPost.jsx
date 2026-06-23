@@ -16,6 +16,7 @@ import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import DOMPurify from 'dompurify';
 import PublishModal from "../components/posts/PublishModal";
 
 export default function EditPost() {
@@ -348,7 +349,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
                    className="w-full h-64 object-cover rounded-xl mb-8"
                  />
                )}
-               <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: formData.content }} />
+               <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formData.content) }} />
             </div>
           </div>
         </div>
