@@ -1,12 +1,13 @@
-import Dashboard from './pages/Dashboard';
-import Ideas from './pages/Ideas';
-import Posts from './pages/Posts';
-import WordPress from './pages/WordPress';
-import Profile from './pages/Profile';
-import LLMTest from './pages/LLMTest';
-import EditPost from './pages/EditPost';
+import { lazy } from 'react';
 import __Layout from './Layout.jsx';
 
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Ideas = lazy(() => import('./pages/Ideas'));
+const Posts = lazy(() => import('./pages/Posts'));
+const WordPress = lazy(() => import('./pages/WordPress'));
+const Profile = lazy(() => import('./pages/Profile'));
+const LLMTest = lazy(() => import('./pages/LLMTest'));
+const EditPost = lazy(() => import('./pages/EditPost'));
 
 export const PAGES = {
     "Dashboard": Dashboard,
