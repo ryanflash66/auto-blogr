@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { WordPressSite } from "@/services/wordpressSites";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 import { Plus } from "lucide-react";
 
 import SiteForm from "../components/wordpress/SiteForm";
@@ -36,6 +37,7 @@ export default function WordPress() {
   const handleSiteSubmit = async (siteData) => {
     if (!user?.id) return;
     
+    const isEditing = Boolean(editingSite);
     try {
       if (editingSite) {
         await WordPressSite.update(editingSite.id, siteData);
@@ -45,8 +47,19 @@ export default function WordPress() {
       setShowForm(false);
       setEditingSite(null);
       loadSites();
+      toast({
+        title: isEditing ? "Site updated" : "Site connected",
+        description: isEditing
+          ? "Your WordPress site settings have been saved."
+          : "Your WordPress site has been added. Use Test to verify the connection.",
+      });
     } catch (error) {
       console.error("Error saving site:", error);
+      toast({
+        variant: "destructive",
+        title: isEditing ? "Couldn't update site" : "Couldn't connect site",
+        description: error.message || "Something went wrong. Please try again.",
+      });
     }
   };
 

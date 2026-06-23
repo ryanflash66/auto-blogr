@@ -3,8 +3,9 @@ import { InvokeLLM } from "@/lib/openrouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  TrendingUp, 
+import { toast } from "@/components/ui/use-toast";
+import {
+  TrendingUp,
   CheckCircle2, 
   AlertTriangle, 
   XCircle,
@@ -63,6 +64,11 @@ Provide a detailed SEO analysis focusing on:
       setSuggestions(response.suggestions || []);
     } catch (error) {
       console.error("Error analyzing SEO:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't analyze SEO",
+        description: error.message || "Check your AI provider settings and try again.",
+      });
     } finally {
       setAnalyzing(false);
     }
@@ -101,6 +107,11 @@ Keep the original message and tone, but optimize for search engines.`,
       onImprove(response);
     } catch (error) {
       console.error("Error improving SEO:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't improve SEO",
+        description: error.message || "Check your AI provider settings and try again.",
+      });
     } finally {
       setImproving(false);
     }

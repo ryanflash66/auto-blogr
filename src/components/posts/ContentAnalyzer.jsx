@@ -3,8 +3,9 @@ import { InvokeLLM } from "@/lib/openrouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  BookOpen, 
+import { toast } from "@/components/ui/use-toast";
+import {
+  BookOpen,
   Sparkles, 
   Loader2,
   CheckCircle2,
@@ -69,6 +70,11 @@ Provide a detailed analysis with:
       setAnalysis(response);
     } catch (error) {
       console.error("Error analyzing content:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't analyze content",
+        description: error.message || "Check your AI provider settings and try again.",
+      });
     } finally {
       setAnalyzing(false);
     }

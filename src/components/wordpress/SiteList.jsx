@@ -3,8 +3,9 @@ import { WordPressSite } from "@/services/wordpressSites";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Globe, 
+import { toast } from "@/components/ui/use-toast";
+import {
+  Globe,
   Settings, 
   CheckCircle2, 
   XCircle, 
@@ -23,15 +24,33 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
     
     try {
       const result = await WordPressSite.testConnection(site);
-      
+
       await WordPressSite.update(site.id, {
         connection_status: result.success ? 'connected' : 'error',
         last_sync_at: new Date().toISOString()
       });
-      
+
       onRefresh();
+
+      if (result.success) {
+        toast({
+          title: "Connection successful",
+          description: `${site.name} is connected and ready to publish.`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Connection failed",
+          description: result.error || "Could not connect. Check the URL and credentials.",
+        });
+      }
     } catch (error) {
       console.error("Error testing connection:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't test connection",
+        description: error.message || "Something went wrong. Please try again.",
+      });
     } finally {
       setTestingConnection(null);
     }
@@ -44,8 +63,17 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
     try {
       await WordPressSite.delete(siteId);
       onRefresh();
+      toast({
+        title: "Site removed",
+        description: "The WordPress site has been disconnected.",
+      });
     } catch (error) {
       console.error("Error deleting site:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't remove site",
+        description: error.message || "Something went wrong. Please try again.",
+      });
     } finally {
       setDeletingSite(null);
     }

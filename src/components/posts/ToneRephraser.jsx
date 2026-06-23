@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { InvokeLLM } from "@/lib/openrouter";
 import { Button } from "@/components/ui/button";
-import { 
-  X, 
+import { toast } from "@/components/ui/use-toast";
+import {
+  X,
   Wand2, 
   Loader2,
   Copy,
@@ -50,6 +51,11 @@ Return only the rephrased content without any additional commentary. Do not wrap
       setRephrasedContent(response);
     } catch (error) {
       console.error("Error rephrasing content:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't rephrase content",
+        description: error.message || "Check your AI provider settings and try again.",
+      });
     } finally {
       setRephrasing(false);
     }

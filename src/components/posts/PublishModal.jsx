@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { 
-  X, 
+import { toast } from "@/components/ui/use-toast";
+import {
+  X,
   Globe, 
   Upload, 
   CheckCircle2,
@@ -138,11 +139,21 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
   const handlePublish = async () => {
     if (!selectedSiteId) {
       setError("Please select a WordPress site");
+      toast({
+        variant: "destructive",
+        title: "No site selected",
+        description: "Please select a WordPress site to publish to.",
+      });
       return;
     }
 
     if (scheduleEnabled && (!scheduledDate || !scheduledTime)) {
       setError("Please select both date and time for scheduled publishing");
+      toast({
+        variant: "destructive",
+        title: "Schedule incomplete",
+        description: "Please select both a date and time for scheduled publishing.",
+      });
       return;
     }
 
@@ -161,6 +172,11 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
         
         if (new Date(scheduledDateTime) <= new Date()) {
           setError("Scheduled time must be in the future");
+          toast({
+            variant: "destructive",
+            title: "Invalid schedule time",
+            description: "The scheduled time must be in the future.",
+          });
           setPublishing(false);
           setPublishStep('idle');
           return;
@@ -242,15 +258,27 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
       
       setPublishStep('success');
       setStatusMessage(scheduleEnabled ? "Post successfully scheduled!" : "Post successfully published!");
-      
+
+      toast({
+        title: scheduleEnabled ? "Post scheduled" : "Post published",
+        description: scheduleEnabled
+          ? "Your post will go live at the scheduled time."
+          : "Your post is now live on WordPress.",
+      });
+
       setTimeout(() => {
         onPublishSuccess();
         onClose();
       }, 2000);
-      
+
     } catch (error) {
       console.error("Error publishing to WordPress:", error);
       setError(error.message || "Failed to publish to WordPress. Please try again.");
+      toast({
+        variant: "destructive",
+        title: scheduleEnabled ? "Couldn't schedule post" : "Couldn't publish post",
+        description: error.message || "Failed to publish to WordPress. Please try again.",
+      });
       setPublishing(false);
       setPublishStep('idle');
     }

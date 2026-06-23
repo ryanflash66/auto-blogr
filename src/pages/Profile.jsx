@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/components/ui/use-toast";
 import { 
   User as UserIcon, 
   Building2, 
@@ -78,8 +79,17 @@ export default function Profile() {
       await User.updateMyUserData(user.id, formData);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+      toast({
+        title: "Profile saved",
+        description: "Your content preferences have been updated.",
+      });
     } catch (error) {
       console.error("Error saving profile:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't save profile",
+        description: error.message || "Something went wrong. Please try again.",
+      });
     } finally {
       setSaving(false);
     }

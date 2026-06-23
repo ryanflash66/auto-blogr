@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
 import { ArrowLeft, Save, Loader2, ImageIcon, X, Globe, Eye, Sparkles, Wand2, PanelRight, ChevronRight } from "lucide-react";
 import ToneRephraser from "../components/posts/ToneRephraser";
 import SEOAnalyzer from "../components/posts/SEOAnalyzer";
@@ -149,8 +150,17 @@ export default function EditPost() {
     setSaving(true);
     try {
       await saveChanges();
+      toast({
+        title: "Post saved",
+        description: "Your changes have been saved.",
+      });
     } catch (error) {
       console.error("Error saving post:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't save post",
+        description: error.message || "Something went wrong. Please try again.",
+      });
     } finally {
       setSaving(false);
     }
@@ -163,6 +173,11 @@ export default function EditPost() {
       setShowPublishModal(true);
     } catch (error) {
       console.error("Error saving before publish:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't save post",
+        description: error.message || "We couldn't save your changes before publishing. Please try again.",
+      });
     } finally {
       setSaving(false);
     }
@@ -182,6 +197,11 @@ Generate only the SEO title, no additional text. Do not use quotation marks.`
       setFormData(prev => ({ ...prev, seo_title: response.trim() }));
     } catch (error) {
       console.error("Error generating SEO title:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't generate SEO title",
+        description: error.message || "Check your AI provider settings and try again.",
+      });
     } finally {
       setGeneratingSEO({ ...generatingSEO, seo_title: false });
     }
@@ -201,6 +221,11 @@ Generate only the meta description, no additional text. Do not use quotation mar
       setFormData(prev => ({ ...prev, meta_description: response.trim() }));
     } catch (error) {
       console.error("Error generating meta description:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't generate meta description",
+        description: error.message || "Check your AI provider settings and try again.",
+      });
     } finally {
       setGeneratingSEO({ ...generatingSEO, meta_description: false });
     }
