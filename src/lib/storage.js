@@ -56,12 +56,16 @@ export const createStorage = (collectionName) => ({
 
   create: async (data) => {
     const items = getCollection(collectionName);
+    // `created_at` is the canonical creation timestamp (services sort by it).
+    // `created_date` is a read alias kept in sync with `created_at` purely for
+    // backward-compat with component readers that display `created_date`.
+    const now = new Date().toISOString();
     const newItem = {
       ...data,
       id: generateId(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      created_date: new Date().toISOString(),
+      created_at: now,
+      updated_at: now,
+      created_date: now,
     };
     items.push(newItem);
     saveCollection(collectionName, items);
@@ -72,7 +76,10 @@ export const createStorage = (collectionName) => ({
     const items = getCollection(collectionName);
     const index = items.findIndex(item => item.id === id);
     if (index === -1) throw new Error('Item not found');
-    
+
+    // Spread existing item first so `created_at` (canonical) and its
+    // `created_date` read alias are always preserved across updates; only
+    // `updated_at` is refreshed.
     items[index] = {
       ...items[index],
       ...updates,
