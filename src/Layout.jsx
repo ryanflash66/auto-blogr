@@ -50,13 +50,19 @@ const navigationItems = [
     title: "LLM Test",
     url: createPageUrl("LLMTest"),
     icon: Beaker,
-    description: "Test integrations"
+    description: "Test integrations",
+    devOnly: true
   }
 ];
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Hide dev-only items (e.g. LLM Test) from the production sidebar + mobile menu.
+  const visibleNavigationItems = navigationItems.filter(
+    (item) => !item.devOnly || import.meta.env.DEV
+  );
 
   const isActivePage = (url) => location.pathname === url;
 
@@ -127,7 +133,7 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Navigation */}
           <nav className="flex flex-1 flex-col space-y-2">
-            {navigationItems.map((item) => {
+            {visibleNavigationItems.map((item) => {
               const isActive = isActivePage(item.url);
               return (
                 <Link
@@ -184,7 +190,7 @@ export default function Layout({ children, currentPageName }) {
         {mobileMenuOpen && (
           <div className="lg:hidden glass-effect border-b border-gray-200">
             <div className="px-4 py-2 space-y-1">
-              {navigationItems.map((item) => {
+              {visibleNavigationItems.map((item) => {
                 const isActive = isActivePage(item.url);
                 return (
                   <Link
