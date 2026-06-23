@@ -6,8 +6,9 @@ import { InvokeLLM } from "@/lib/openrouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Edit, 
+import { toast } from "@/components/ui/use-toast";
+import {
+  Edit,
   Calendar,
   FileText,
   Hash,
@@ -33,8 +34,17 @@ export default function PostDetails({ post, onUpdate }) {
     try {
       await BlogPost.delete(post.id);
       onUpdate();
+      toast({
+        title: "Post deleted",
+        description: "The post has been removed.",
+      });
     } catch (error) {
       console.error("Error deleting post:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't delete post",
+        description: error.message || "Something went wrong. Please try again.",
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -56,6 +66,11 @@ Generate only the excerpt, no additional text.`
       onUpdate();
     } catch (error) {
       console.error("Error regenerating excerpt:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't regenerate excerpt",
+        description: error.message || "Check your AI provider settings and try again.",
+      });
     } finally {
       setIsRegenerating(false);
     }

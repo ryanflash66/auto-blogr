@@ -8,8 +8,9 @@ import { InvokeLLM, GenerateImage } from "@/lib/openrouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Zap, 
+import { toast } from "@/components/ui/use-toast";
+import {
+  Zap,
   Target, 
   Volume2, 
   Hash, 
@@ -109,13 +110,23 @@ export default function IdeaDetails({ idea, onUpdate }) {
       await BlogIdea.update(idea.id, { status: 'ready' });
       
       setGenerationProgress("Content generated successfully!");
-      
+
       // Immediately trigger update to refresh UI state
       onUpdate();
-      
+
+      toast({
+        title: "Content generated",
+        description: `Created ${idea.variations_requested} post${idea.variations_requested > 1 ? "s" : ""} from this idea.`,
+      });
+
     } catch (error) {
       console.error("Error generating content:", error);
       setGenerationProgress("Error generating content. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Couldn't generate content",
+        description: error.message || "Check your AI provider settings and try again.",
+      });
     } finally {
       setIsGenerating(false);
     }

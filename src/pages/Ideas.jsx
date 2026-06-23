@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { BlogIdea } from "@/services/blogIdeas";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 import { Plus } from "lucide-react";
 
 import IdeaForm from "../components/ideas/IdeaForm";
@@ -48,8 +49,17 @@ export default function Ideas() {
       await BlogIdea.create(user.id, ideaData);
       setShowForm(false);
       loadIdeas();
+      toast({
+        title: "Idea created",
+        description: "Your blog idea has been saved.",
+      });
     } catch (error) {
       console.error("Error creating idea:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't create idea",
+        description: error.message || "Something went wrong. Please try again.",
+      });
     }
   };
 
@@ -66,8 +76,17 @@ export default function Ideas() {
         setSelectedIdea(null);
       }
       loadIdeas();
+      toast({
+        title: idsToDelete.length > 1 ? "Ideas deleted" : "Idea deleted",
+        description: `${idsToDelete.length} idea${idsToDelete.length > 1 ? "s" : ""} removed.`,
+      });
     } catch (error) {
       console.error("Error deleting ideas:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't delete ideas",
+        description: error.message || "Something went wrong. Please try again.",
+      });
     }
   };
 

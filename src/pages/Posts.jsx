@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { BlogPost } from "@/services/blogPosts";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
 import { Search, Filter } from "lucide-react";
 
 import PostCard from "../components/posts/PostCard";
@@ -69,8 +70,17 @@ export default function Posts() {
         meta_description: improvements.meta_description
       });
       loadPosts();
+      toast({
+        title: "SEO updated",
+        description: "The improved title and meta description have been saved.",
+      });
     } catch (error) {
       console.error("Error applying SEO improvements:", error);
+      toast({
+        variant: "destructive",
+        title: "Couldn't apply SEO improvements",
+        description: error.message || "Something went wrong. Please try again.",
+      });
     }
   };
 
