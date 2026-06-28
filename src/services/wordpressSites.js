@@ -1,4 +1,4 @@
-import { createStorage } from '@/lib/storage';
+import { createStorage } from '@/lib/supabaseStorage';
 
 const storage = createStorage('wordpress_sites');
 

@@ -1,4 +1,4 @@
-import { userStorage } from '@/lib/storage';
+import { userStorage } from '@/lib/supabaseStorage';
 
 /**
  * User Service - handles user data using local storage
