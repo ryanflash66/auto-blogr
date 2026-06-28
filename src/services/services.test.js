@@ -1,115 +1,120 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createStorage } from '@/lib/storage';
-import { BlogPost } from './blogPosts';
-import { BlogIdea } from './blogIdeas';
-import { WordPressSite } from './wordpressSites';
-import { User } from './users';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-// These exercise the real storage layer (backed by jsdom's localStorage) to
-// confirm the service wrappers delegate create/list/filter/get correctly and
-// map their input fields onto the persisted records.
-describe('service wrappers delegate to storage', () => {
-  beforeEach(() => {
-    localStorage.clear();
+// The services now delegate to the Supabase-backed storage layer. We mock that
+// layer so these tests stay pure (no network, no env) and verify what the
+// service wrappers are actually responsible for: field mapping, defaults, and
+// delegating to the right storage method.
+const { stores, userStorageMock, makeStore } = vi.hoisted(() => {
+  const makeStore = () => ({
+    list: vi.fn(() => Promise.resolve([])),
+    filter: vi.fn(() => Promise.resolve([])),
+    get: vi.fn(() => Promise.resolve(null)),
+    create: vi.fn((d) => Promise.resolve({ id: 'row-1', ...d })),
+    update: vi.fn((id, u) => Promise.resolve({ id, ...u })),
+    delete: vi.fn(() => Promise.resolve()),
   });
+  const stores = {};
+  const userStorageMock = {
+    get: vi.fn(() => Promise.resolve({ id: 'me', business_name: '' })),
+    update: vi.fn((u) => Promise.resolve({ id: 'me', ...u })),
+  };
+  return { stores, userStorageMock, makeStore };
+});
 
-  describe('BlogPost', () => {
-    it('create persists the post and list returns it', async () => {
-      const created = await BlogPost.create('user-1', {
-        title: 'My Post',
-        content: 'body',
-        status: 'ready',
-      });
+vi.mock('@/lib/supabaseStorage', () => ({
+  createStorage: (table) => (stores[table] ||= makeStore()),
+  userStorage: userStorageMock,
+  default: {},
+}));
 
-      expect(created.id).toMatch(/^id_/);
-      expect(created.title).toBe('My Post');
-      // Defaults applied by the wrapper.
-      expect(created.variation_number).toBe(1);
-      expect(created.tags).toEqual([]);
+const { BlogPost } = await import('./blogPosts');
+const { BlogIdea } = await import('./blogIdeas');
+const { WordPressSite } = await import('./wordpressSites');
+const { User } = await import('./users');
 
-      const all = await BlogPost.list('user-1');
-      expect(all).toHaveLength(1);
-      expect(all[0].id).toBe(created.id);
-    });
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
-    it('filter delegates field matching to storage', async () => {
-      await BlogPost.create('user-1', { title: 'Ready', status: 'ready' });
-      await BlogPost.create('user-1', { title: 'Draft', status: 'draft' });
-
-      const ready = await BlogPost.filter('user-1', { status: 'ready' });
-      expect(ready).toHaveLength(1);
-      expect(ready[0].title).toBe('Ready');
-    });
-
-    it('get and update round-trip through storage', async () => {
-      const created = await BlogPost.create('user-1', { title: 'Original' });
-
-      const updated = await BlogPost.update(created.id, { title: 'Edited' });
-      expect(updated.title).toBe('Edited');
-
-      const fetched = await BlogPost.get(created.id);
-      expect(fetched.title).toBe('Edited');
-    });
-  });
-
-  describe('BlogIdea', () => {
-    it('create applies defaults and persists', async () => {
-      const idea = await BlogIdea.create('user-1', {
-        title: 'Idea',
-        description: 'desc',
-      });
-
-      expect(idea.tone).toBe('professional');
-      expect(idea.keywords).toEqual([]);
-      expect(idea.status).toBe('draft');
-
-      const all = await BlogIdea.list('user-1');
-      expect(all.map((i) => i.id)).toContain(idea.id);
+describe('BlogPost', () => {
+  it('create maps fields and applies defaults', async () => {
+    await BlogPost.create('user-1', { title: 'My Post', content: 'body', status: 'ready' });
+    expect(stores['blog_posts'].create).toHaveBeenCalledWith({
+      blog_idea_id: undefined,
+      title: 'My Post',
+      content: 'body',
+      excerpt: undefined,
+      hero_image_url: undefined,
+      hero_image_alt: undefined,
+      variation_number: 1,
+      status: 'ready',
+      seo_title: undefined,
+      meta_description: undefined,
+      tags: [],
+      word_count: 0,
     });
   });
 
-  describe('WordPressSite', () => {
-    it('create defaults connection_status and is_active, then filters', async () => {
-      const site = await WordPressSite.create('user-1', {
-        name: 'Blog',
-        url: 'https://blog.example',
-        username: 'admin',
-        api_key: 'secret',
-      });
+  it('list/filter/get/update/delete delegate to storage', async () => {
+    await BlogPost.list('user-1', '-created_at', 5);
+    expect(stores['blog_posts'].list).toHaveBeenCalledWith('-created_at', 5);
 
-      expect(site.connection_status).toBe('disconnected');
-      expect(site.is_active).toBe(true);
+    await BlogPost.filter('user-1', { status: 'ready' });
+    expect(stores['blog_posts'].filter).toHaveBeenCalledWith({ status: 'ready' });
 
-      // Seed an inactive site directly (the wrapper hardcodes is_active: true)
-      // so the filter has a non-matching record to exclude — otherwise the
-      // assertion would pass even if filtering were a no-op.
-      await createStorage('wordpress_sites').create({ name: 'Old', is_active: false });
+    await BlogPost.get('p1');
+    expect(stores['blog_posts'].get).toHaveBeenCalledWith('p1');
 
-      const active = await WordPressSite.filter('user-1', { is_active: true });
-      expect(active).toHaveLength(1);
-      expect(active[0].id).toBe(site.id);
+    await BlogPost.update('p1', { title: 'Edited' });
+    expect(stores['blog_posts'].update).toHaveBeenCalledWith('p1', { title: 'Edited' });
+
+    await BlogPost.delete('p1');
+    expect(stores['blog_posts'].delete).toHaveBeenCalledWith('p1');
+  });
+});
+
+describe('BlogIdea', () => {
+  it('create applies defaults (tone, keywords, variations, status)', async () => {
+    await BlogIdea.create('user-1', { title: 'Idea', description: 'desc' });
+    expect(stores['blog_ideas'].create).toHaveBeenCalledWith({
+      title: 'Idea',
+      description: 'desc',
+      target_audience: undefined,
+      tone: 'professional',
+      keywords: [],
+      variations_requested: 1,
+      status: 'draft',
     });
   });
+});
 
-  describe('isolation across services', () => {
-    it('each service uses its own collection', async () => {
-      await BlogPost.create('user-1', { title: 'post' });
-
-      // Creating a post must not leak into other collections.
-      expect(await BlogIdea.list('user-1')).toEqual([]);
-      expect(await WordPressSite.list('user-1')).toEqual([]);
+describe('WordPressSite', () => {
+  it('create defaults connection_status and is_active', async () => {
+    await WordPressSite.create('user-1', {
+      name: 'Blog',
+      url: 'https://blog.example',
+      username: 'admin',
+      api_key: 'secret',
+    });
+    expect(stores['wordpress_sites'].create).toHaveBeenCalledWith({
+      name: 'Blog',
+      url: 'https://blog.example',
+      username: 'admin',
+      api_key: 'secret',
+      default_category: undefined,
+      default_author: undefined,
+      connection_status: 'disconnected',
+      is_active: true,
     });
   });
+});
 
-  describe('User', () => {
-    it('me seeds and returns the default local user', async () => {
-      const user = await User.me();
-      expect(user.id).toBe('local_user');
+describe('User', () => {
+  it('me reads, and updateMyUserData writes, the profile (clerkId ignored)', async () => {
+    await User.me();
+    expect(userStorageMock.get).toHaveBeenCalled();
 
-      const updated = await User.updateMyUserData('clerk-ignored', {
-        business_name: 'Acme',
-      });
-      expect(updated.business_name).toBe('Acme');
-    });
+    await User.updateMyUserData('clerk-ignored', { business_name: 'Acme' });
+    expect(userStorageMock.update).toHaveBeenCalledWith({ business_name: 'Acme' });
   });
 });
