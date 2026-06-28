@@ -1,19 +1,21 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { 
-  LayoutDashboard, 
-  Lightbulb, 
-  FileText, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Lightbulb,
+  FileText,
+  Settings,
   User as UserIcon,
   Zap,
   Menu,
   X,
-  Beaker
+  Beaker,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/lib/AuthContext";
 
 const navigationItems = [
   {
@@ -58,6 +60,7 @@ const navigationItems = [
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   // Hide dev-only items (e.g. LLM Test) from the production sidebar + mobile menu.
   const visibleNavigationItems = navigationItems.filter(
@@ -165,6 +168,26 @@ export default function Layout({ children, currentPageName }) {
               </p>
             </div>
           </div>
+
+          {/* Account / Sign out */}
+          <div className="border-t border-gray-200 pt-4">
+            {user?.email && (
+              <p
+                className="mb-2 truncate text-xs text-gray-500"
+                title={user.email}
+              >
+                Signed in as <span className="font-medium text-gray-700">{user.email}</span>
+              </p>
+            )}
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-2"
+              onClick={() => signOut()}
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -210,6 +233,26 @@ export default function Layout({ children, currentPageName }) {
                   </Link>
                 );
               })}
+
+              {/* Account / Sign out */}
+              <div className="mt-2 border-t border-gray-200 pt-2">
+                {user?.email && (
+                  <p className="px-3 pb-2 truncate text-xs text-gray-500" title={user.email}>
+                    {user.email}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    signOut();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-600"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign out
+                </button>
+              </div>
             </div>
           </div>
         )}

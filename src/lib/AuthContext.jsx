@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { userStorage } from './storage';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 const AuthContext = createContext({});
 
@@ -12,30 +12,72 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
-      const userData = await userStorage.get();
-      setUser(userData);
+    let isMounted = true;
+
+    // Hydrate from any persisted session, then stop the initial loading state.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!isMounted) return;
+        setSession(data.session ?? null);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    // Keep local state in sync with sign-in / sign-out / token refresh events.
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (!isMounted) return;
+      setSession(newSession ?? null);
       setIsLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription?.unsubscribe();
     };
-    loadUser();
   }, []);
 
-  const value = {
-    user,
-    clerkUser: user, // For compatibility
-    isAuthenticated: true, // Always authenticated in local mode
-    isLoading,
+  const signUp = async (email, password, fullName) => {
+    return supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // Surfaced to the profile trigger / user metadata as `full_name`.
+        data: { full_name: fullName ?? '' },
+      },
+    });
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+  const signIn = async (email, password) => {
+    return supabase.auth.signInWithPassword({ email, password });
+  };
+
+  const signOut = async () => {
+    return supabase.auth.signOut();
+  };
+
+  const value = useMemo(
+    () => ({
+      // The Supabase auth user (id is the auth uid that services key off of).
+      user: session?.user ?? null,
+      session,
+      isAuthenticated: !!session,
+      isLoading,
+      signUp,
+      signIn,
+      signOut,
+    }),
+    [session, isLoading]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;

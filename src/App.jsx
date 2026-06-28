@@ -6,8 +6,9 @@ import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
-import { AuthProvider } from '@/lib/AuthContext';
+import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import Login from './pages/Login';
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -26,34 +27,48 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
+const AppRoutes = () => (
+  <Router>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={
+          <LayoutWrapper currentPageName={mainPageKey}>
+            <MainPage />
+          </LayoutWrapper>
+        } />
+        {Object.entries(Pages).map(([path, Page]) => (
+          <Route
+            key={path}
+            path={`/${path}`}
+            element={
+              <LayoutWrapper currentPageName={path}>
+                <Page />
+              </LayoutWrapper>
+            }
+          />
+        ))}
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </Suspense>
+  </Router>
+);
+
+// Gates the app behind authentication: spinner while the session resolves,
+// the Login screen when signed out, the routed app when signed in.
+function AuthenticatedApp() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return <PageLoader />;
+  if (!isAuthenticated) return <Login />;
+  return <AppRoutes />;
+}
+
 function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <ErrorBoundary>
-          <Router>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={
-                  <LayoutWrapper currentPageName={mainPageKey}>
-                    <MainPage />
-                  </LayoutWrapper>
-                } />
-                {Object.entries(Pages).map(([path, Page]) => (
-                  <Route
-                    key={path}
-                    path={`/${path}`}
-                    element={
-                      <LayoutWrapper currentPageName={path}>
-                        <Page />
-                      </LayoutWrapper>
-                    }
-                  />
-                ))}
-                <Route path="*" element={<PageNotFound />} />
-              </Routes>
-            </Suspense>
-          </Router>
+          <AuthenticatedApp />
         </ErrorBoundary>
         <Toaster />
       </QueryClientProvider>
