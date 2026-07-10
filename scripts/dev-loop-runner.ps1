@@ -606,10 +606,11 @@ try {
         Git -C $WorktreePath push -u $Remote $runBranch | Out-Null
 
         $prTitle = "{0}: {1}" -f $ticket, $summary
+        $prTitle = $prTitle -replace '"', ''   # strip quotes: PS 5.1 native-arg quoting is unreliable
         $prBodyTmpl = @'
 {SUMMARY}
 
-Opened by the scheduled dev loop ({TICKET}). Mode 3: this PR auto-merges to `{BASE}` once the CI "{CHECK}" check is green. It does NOT ship to production by itself: promotion `{BASE}` -> `main` (Vercel) stays a human step.
+Opened by the scheduled dev loop ({TICKET}). Mode 3: this PR auto-merges to `{BASE}` once the CI `{CHECK}` check is green. It does NOT ship to production by itself: promotion `{BASE}` -> `main` (Vercel) stays a human step.
 
 **Ticket:** {TICKET}
 **Branch:** `{BRANCH}` -> `{BASE}`
@@ -626,7 +627,11 @@ Opened by the scheduled dev loop ({TICKET}). Mode 3: this PR auto-merges to `{BA
 **Protected-area check:** this change touches no protected surface (auth, secrets/BYOK, `supabase/migrations/**`, `src/lib/supabase*`, Edge Functions, `.github/workflows/*`, deploy config, `wp-plugin/**`). If it does, do not merge — escalate.
 '@
         $prBody = $prBodyTmpl.Replace('{SUMMARY}', $summary).Replace('{TICKET}', $ticket).Replace('{BRANCH}', $runBranch).Replace('{BASE}', $BaseBranch).Replace('{CHECK}', $script:RequiredCheck).Replace('{FILES}', $fileListMd).Replace('{CI}', (Fmt $ciExit)).Replace('{LINT}', (Fmt $lintExit)).Replace('{TEST}', (Fmt $testExit)).Replace('{BUILD}', (Fmt $buildExit))
-        $prRes = Invoke-Capture -Exe $script:GhExe -Arguments @('pr', 'create', '--base', $BaseBranch, '--head', $runBranch, '--title', $prTitle, '--body', $prBody) -WorkDir $WorktreePath
+        # Pass the body via a file (never inline): multi-line markdown with backticks/quotes
+        # would otherwise be mis-tokenized by the Windows PowerShell 5.1 native-arg parser.
+        $prBodyFile = Join-Path $LogDir ("pr-body-{0}.md" -f $stamp)
+        [void](Set-FileText -Path $prBodyFile -Text $prBody)
+        $prRes = Invoke-Capture -Exe $script:GhExe -Arguments @('pr', 'create', '--base', $BaseBranch, '--head', $runBranch, '--title', $prTitle, '--body-file', $prBodyFile) -WorkDir $WorktreePath
         Append-Raw -Prefix '[gh] ' -Text $prRes.Stdout
         if ($prRes.ExitCode -ne 0) { throw "gh pr create failed (exit $($prRes.ExitCode)). See log." }
         $prUrl = (($prRes.Stdout -split "`r?`n") | Where-Object { $_ -match '^https?://' } | Select-Object -Last 1)
@@ -634,7 +639,7 @@ Opened by the scheduled dev loop ({TICKET}). Mode 3: this PR auto-merges to `{BA
         Write-Log ("PR opened: {0}" -f $prUrl)
 
         $bodyTmpl = @'
-Implemented via the scheduled dev loop and opened as a PR (Mode 3: auto-merges to `{BASE}` once the CI "{CHECK}" check is green).
+Implemented via the scheduled dev loop and opened as a PR (Mode 3: auto-merges to `{BASE}` once the CI `{CHECK}` check is green).
 
 **PR:** {PRURL}
 **Branch:** `{BRANCH}` -> `{BASE}`
@@ -649,7 +654,7 @@ Implemented via the scheduled dev loop and opened as a PR (Mode 3: auto-merges t
 - `npm run test` : {TEST}
 - `npm run build` : {BUILD}
 
-This PR auto-merges to `{BASE}` once "{CHECK}" is green, and the ticket then moves to Done. Production promotion (`{BASE}` -> `main`, Vercel) stays a human step: verify on `{BASE}` and file new tickets for anything off.
+This PR auto-merges to `{BASE}` once `{CHECK}` is green, and the ticket then moves to Done. Production promotion (`{BASE}` -> `main`, Vercel) stays a human step: verify on `{BASE}` and file new tickets for anything off.
 '@
         $body = $bodyTmpl.Replace('{PRURL}', $prUrl).Replace('{BRANCH}', $runBranch).Replace('{BASE}', $BaseBranch).Replace('{CHECK}', $script:RequiredCheck).Replace('{SUMMARY}', $summary).Replace('{FILES}', $fileListMd).Replace('{CI}', (Fmt $ciExit)).Replace('{LINT}', (Fmt $lintExit)).Replace('{TEST}', (Fmt $testExit)).Replace('{BUILD}', (Fmt $buildExit))
         Invoke-Finalize -Ticket $ticket -ToState 'Review' -Body $body
