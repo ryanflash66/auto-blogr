@@ -373,6 +373,17 @@ function Test-MergeReady {
 # -> left open, retried next run; conflicts -> left open for manual rebase. `main` is never touched.
 function Invoke-MergeSweep {
     try {
+        # Free any local dev-loop branch held by the dedicated worktree. A worktree left on the
+        # prior run's feature branch makes `gh pr merge --delete-branch` fail its LOCAL delete step
+        # (and thus return non-zero) even though the PR merged fine. Detaching first avoids that.
+        if (Test-Path $WorktreePath) {
+            $wtHead = (Invoke-Capture -Exe $script:GitExe -Arguments @('-C', $WorktreePath, 'rev-parse', '--abbrev-ref', 'HEAD')).Stdout.Trim()
+            if ($wtHead -and $wtHead -ne 'HEAD') {
+                Write-Log ("Detaching worktree from '{0}' so merged branches can be deleted." -f $wtHead)
+                Invoke-Logged -Exe $script:GitExe -Arguments @('-C', $WorktreePath, 'reset', '--hard') -AllowFail | Out-Null
+                Invoke-Logged -Exe $script:GitExe -Arguments @('-C', $WorktreePath, 'checkout', '--detach') -AllowFail | Out-Null
+            }
+        }
         $listJson = (Invoke-Capture -Exe $script:GhExe -Arguments @('pr', 'list', '--state', 'open', '--base', $BaseBranch, '--json', 'number,headRefName', '--limit', '100') -WorkDir $RepoRoot).Stdout
         $parsed = $null
         try { $parsed = $listJson | ConvertFrom-Json } catch { }
