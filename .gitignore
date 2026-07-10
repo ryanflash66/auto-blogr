@@ -30,3 +30,8 @@ dist-ssr
 *.sw?
 
 .env
+
+# AI dev loop (local — never commit run logs, worktrees, or local perms)
+.claude/loop-runs/
+.claude/worktrees/
+.claude/settings.local.json

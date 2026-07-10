@@ -1,0 +1,12 @@
+You are running a HEADLESS finalize step for the AutoBlogr scheduled dev loop. Do NOT modify any code, do NOT run any build, do NOT touch git. Use ONLY the Linear MCP.
+
+For issue {TICKET} in the Linear project "{PROJECT}" (team "{TEAM}"):
+
+{STATE_INSTRUCTION}
+2. Add a NEW comment to {TICKET} whose body is EXACTLY the Markdown between the two markers below. Post this comment EVEN IF the ticket already has similar comments — it is the authoritative reviewer handoff (it carries the PR link and verification) and must be added as its own new comment. Do not include the marker lines, do not edit or reuse an existing comment, and do not add anything else.
+---BODY-START---
+{BODY}
+---BODY-END---
+
+After the comment is posted (and the state change, if requested, is applied), output the single word:
+DONE

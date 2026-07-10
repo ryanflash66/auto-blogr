@@ -15,19 +15,10 @@ on:
       - 'postcss.config.js'
       - 'jsconfig.json'
       - '.github/workflows/web.yml'
+  # Run on every PR targeting main or dev so the "Lint and build" check is always
+  # present as the merge gate for dev-loop PRs (feature -> dev) and promotions (dev -> main).
   pull_request:
-    paths:
-      - 'src/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.js'
-      - 'vitest.config.js'
-      - 'index.html'
-      - 'eslint.config.js'
-      - 'tailwind.config.js'
-      - 'postcss.config.js'
-      - 'jsconfig.json'
-      - '.github/workflows/web.yml'
+    branches: [main, dev]
 
 jobs:
   build:
