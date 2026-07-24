@@ -23,8 +23,10 @@ const getApiKey = () => {
   return key;
 };
 
-// Default models
-const DEFAULT_TEXT_MODEL = 'anthropic/claude-3.5-sonnet';
+// Default models. OpenRouter slugs use dot notation ('claude-opus-4.8'), which
+// differs from Anthropic's own API ids ('claude-opus-4-8') — verify any change
+// against https://openrouter.ai/api/v1/models before shipping it.
+const DEFAULT_TEXT_MODEL = 'anthropic/claude-opus-4.8';
 const DEFAULT_IMAGE_MODEL = 'openai/dall-e-3';
 
 /**

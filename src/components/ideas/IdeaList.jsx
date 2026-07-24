@@ -19,7 +19,7 @@ import {
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 
-export default function IdeaList({ ideas, loading, onIdeaSelect, selectedIdea, onDelete }) {
+export default function IdeaList({ ideas, loading, onIdeaSelect, selectedIdea, onDelete, onCreateIdea }) {
   const [selectedIds, setSelectedIds] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -95,7 +95,10 @@ export default function IdeaList({ ideas, loading, onIdeaSelect, selectedIdea, o
           <Lightbulb className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-600 mb-2">No ideas yet</h3>
           <p className="text-gray-500 mb-6">Start by creating your first blog idea</p>
-          <Button className="bg-gradient-to-r from-emerald-600 to-emerald-700">
+          <Button
+            onClick={onCreateIdea}
+            className="bg-gradient-to-r from-emerald-600 to-emerald-700"
+          >
             Create Your First Idea
           </Button>
         </CardContent>

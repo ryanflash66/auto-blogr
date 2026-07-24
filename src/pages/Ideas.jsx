@@ -116,6 +116,7 @@ export default function Ideas() {
             onIdeaSelect={handleIdeaSelect}
             selectedIdea={selectedIdea}
             onDelete={handleDeleteIdeas}
+            onCreateIdea={() => setShowForm(true)}
           />
         </div>
 

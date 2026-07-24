@@ -1,0 +1,17 @@
+{
+  "name": "AutoBlogr",
+  "short_name": "AutoBlogr",
+  "description": "AI Content Creation",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}
