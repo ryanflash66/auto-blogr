@@ -42,3 +42,6 @@ ds-bundle/
 .design-sync/.cache/
 .design-sync/learnings/
 .design-sync/node_modules
+# Project Brain machine-local state
+.project-brain/local.yaml
+.project-brain/runtime/

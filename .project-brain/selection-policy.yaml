@@ -1,0 +1,22 @@
+schema_version: 1
+
+# SELECT_WORK eligibility (ARCHITECTURE.md 5.4). These are also the defaults
+# applied when a project declares no selection-policy.yaml.
+
+# Linear workflow state *types*, not state names: backlog, unstarted, started,
+# completed, canceled (and triage).
+eligible_state_types:
+  - backlog
+  - unstarted
+
+# The project allowlist label. Set to null to select any issue in an eligible
+# state.
+require_label: ai-eligible
+
+exclude_labels: []
+
+require_acceptance_criteria: true
+
+# An issue labelled with one of project.yaml's protected_surfaces is never
+# picked autonomously. A human can still name it: `/steer start work on KEY`.
+exclude_protected_surface_labels: true
