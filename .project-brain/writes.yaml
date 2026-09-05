@@ -6,5 +6,6 @@
 schema_version: 1
 github:
   credential_ref: gh-cli
-  actions: []
+  actions:
+    - pull_request_merge
   merge_method: merge
