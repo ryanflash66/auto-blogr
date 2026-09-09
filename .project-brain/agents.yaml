@@ -168,8 +168,23 @@ bindings:
       include: [ticket, acceptance_criteria, changed_files, decisions, test_evidence, artifacts]
       exclude: [full_chat_history]
 
-  # Activates only for the protected paths named in
-  # .claude/steering/project-instructions.md "Protected areas".
+  # Two things make this binding eligible, and they are different in kind.
+  #
+  # 1. AutoBlogr's own protected areas, from
+  #    .claude/steering/project-instructions.md "Protected areas".
+  # 2. The protected surfaces this project declares in project.yaml that the
+  #    shipped catalogue requires a security_reviewer for. Those patterns are
+  #    mirrored verbatim from DEFAULT_PROTECTED_SURFACE_RULES so the binding is
+  #    eligible for exactly what can demand it -- no wider, and never narrower.
+  #    Of the five catalogue surfaces that require this role, this project
+  #    declares three: authentication, secrets, payments.
+  #    production-infrastructure and destructive-migrations are not declared
+  #    under those names (this project says ci-workflows, deployment-config,
+  #    database-migrations), and an undeclared surface gates nothing -- an
+  #    unmapped declared surface gets a label-only rule with no specialist.
+  #
+  # If project.yaml's protected_surfaces or the catalogue changes, this list
+  # has to be revisited: nothing recomputes it.
   - id: autoblogr-security-reviewer
     project_id: autoblogr
     role: security_reviewer
@@ -179,12 +194,43 @@ bindings:
     scope: {}
     routing_conditions:
       any:
-        - paths_match: supabase/migrations/**
-        - paths_match: supabase/functions/**
-        - paths_match: src/lib/supabase**
-        - paths_match: .github/workflows/**
-        - paths_match: wp-plugin/**
-        - labels_include: security-sensitive
+        # 1. AutoBlogr's own protected areas.
+        - paths_match:
+            - supabase/migrations/**
+            - supabase/functions/**
+            - src/lib/supabase**
+            - .github/workflows/**
+            - wp-plugin/**
+        # 2a. Catalogue surface "authentication".
+        - paths_match:
+            - src/auth/**
+            - "**/auth/**"
+            - "**/authentication/**"
+            - "**/authorization/**"
+            - "**/session/**"
+            - "**/login/**"
+        # 2b. Catalogue surface "secrets".
+        - paths_match:
+            - "**/.env*"
+            - "**/secrets/**"
+            - "**/credentials/**"
+            - "**/*credential*"
+            - "**/*secret*"
+        # 2c. Catalogue surface "payments".
+        - paths_match:
+            - src/billing/**
+            - "**/billing/**"
+            - "**/payments/**"
+            - "**/checkout/**"
+        # Every label the three catalogue rules above recognise, so a change
+        # that touches none of those paths but is labelled still routes here.
+        - labels_include:
+            - security-sensitive
+            - authentication
+            - secrets
+            - credentials
+            - payments
+            - billing
     permission_overrides: {}
     context_policy:
       token_budget: 3500
