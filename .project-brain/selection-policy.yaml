@@ -5,15 +5,29 @@ schema_version: 1
 
 # Linear workflow state *types*, not state names: backlog, unstarted, started,
 # completed, canceled (and triage).
+#
+# `unstarted` only, which is Todo. CLAUDE.md's "Linear workflow & labels" says
+# the loop selects Todo only, and Backlog is where a ticket waits for its
+# dependencies. Accepting `backlog` here let SELECT_WORK pick DAR-390 while that
+# ticket's own description still said it depends on D1-D3 landing.
 eligible_state_types:
-  - backlog
   - unstarted
 
 # The project allowlist label. Set to null to select any issue in an eligible
 # state.
 require_label: ai-eligible
 
-exclude_labels: []
+# The hand-back labels from CLAUDE.md: the loop skips a ticket carrying any of
+# them. `require_label` already excludes all of these today, because no ticket
+# carrying one is also labelled `ai-eligible` - but that is a property of the
+# current backlog, not a rule. Naming them here means a ticket that gains
+# `ai-eligible` while still marked for a human is refused on its own merits.
+exclude_labels:
+  - human-only
+  - owner-review
+  - owner-input
+  - blocked
+  - Decision
 
 require_acceptance_criteria: true
 
