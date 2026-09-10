@@ -1,0 +1,38 @@
+schema_version: 1
+
+inbox:
+  stable_seconds: 5
+  maximum_file_bytes: 104857600
+  follow_symlinks: false
+
+allowed_extensions:
+  - .md
+  - .txt
+  - .json
+  - .docx
+  - .pdf
+  - .pptx
+  - .xlsx
+  - .png
+  - .jpg
+  - .jpeg
+
+quarantine:
+  unknown_mime: true
+  executable_content: true
+  path_escape: true
+
+retention:
+  default: working
+  permanent_types:
+    - specification
+    - architecture-decision
+    - qa-report
+    - release-record
+    - final-deliverable
+
+versioning:
+  hash_algorithm: sha256
+  overwrite_originals: false
+  ambiguous_identity: require_review
+

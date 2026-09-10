@@ -1,0 +1,49 @@
+schema_version: 1
+
+project_kernel:
+  maximum_tokens: 600
+
+roles:
+  project_manager:
+    maximum_tokens: 2200
+    maximum_artifacts: 3
+    maximum_decisions: 2
+    recent_events: 2
+    include_full_comments: false
+
+  developer:
+    maximum_tokens: 3500
+    maximum_artifacts: 4
+    maximum_decisions: 2
+    recent_events: 2
+    include_full_comments: false
+
+  reviewer:
+    maximum_tokens: 4500
+    maximum_artifacts: 4
+    maximum_decisions: 3
+    recent_events: 2
+
+  qa:
+    maximum_tokens: 3000
+    maximum_artifacts: 3
+    maximum_decisions: 2
+    recent_events: 2
+
+  security_reviewer:
+    maximum_tokens: 3500
+    maximum_artifacts: 4
+    maximum_decisions: 3
+    recent_events: 2
+
+retrieval:
+  maximum_tokens_per_request: 1000
+  maximum_results: 3
+
+mandatory_priority:
+  - safety_policy
+  - protected_surface_constraints
+  - live_acceptance_criteria
+  - current_direct_instruction
+  - current_blockers
+

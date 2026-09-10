@@ -1,0 +1,252 @@
+schema_version: 1
+
+# Provider-agnostic agent definitions and AutoBlogr project bindings.
+#
+# Agent definitions describe capability, not vendor: `provider.provider` is
+# `configurable` so a binding can be repointed at a different implementation
+# without touching the Work Graph. Credentials appear only as secret://
+# references and are resolved at the adapter boundary.
+
+agents:
+  - id: cowork-pm
+    name: Cowork PM
+    description: Owns product clarification, planning, acceptance criteria, and delivery coordination.
+    status: active
+    provider:
+      adapter: cowork-desktop
+      provider: configurable
+      interface: desktop
+    roles: [project_manager]
+    capabilities: [planning, issue_management, acceptance_criteria, artifact_creation]
+    allowed_tools: [project_brain.read, linear.read, linear.write, artifact.write]
+    allowed_graph_nodes: [PLAN_OR_CLARIFY, CHECKPOINT]
+    permissions:
+      code_read: true
+      code_write: false
+      linear_write: true
+      pull_request_merge: false
+      artifact_create: true
+      artifact_approve: true
+      decision_approve_product: true
+    data_classifications_allowed: [public, internal, confidential]
+
+  - id: claude-code-fullstack
+    name: Full-Stack Developer
+    description: Implements scoped repository changes and produces verification evidence.
+    status: active
+    provider:
+      adapter: claude-code
+      provider: configurable
+      interface: cli
+    roles: [developer]
+    capabilities: [implementation, testing, pull_request_authoring]
+    allowed_tools: [project_brain.read, git.read, git.write, github.pull_request, linear.read]
+    allowed_graph_nodes: [IMPLEMENT, REPAIR]
+    permissions:
+      code_read: true
+      code_write: true
+      linear_write: false
+      pull_request_create: true
+      # Production promotion dev -> main is a human step
+      # (.claude/steering/safety-rules.md).
+      pull_request_merge: false
+      artifact_create: true
+      artifact_approve: false
+    data_classifications_allowed: [public, internal, confidential]
+
+  - id: general-reviewer
+    name: General Reviewer
+    description: Performs independent correctness, architecture, and regression review.
+    status: active
+    provider:
+      adapter: generic-mcp-agent
+      provider: configurable
+      interface: mcp
+      credential_ref: secret://project-brain/agents/general-reviewer
+    roles: [reviewer]
+    capabilities: [code_review, architecture_review, regression_review]
+    allowed_tools: [project_brain.read, git.read, github.read, github.review, linear.read]
+    allowed_graph_nodes: [REVIEW]
+    permissions:
+      code_read: true
+      code_write: false
+      linear_write: false
+      pull_request_review: true
+      pull_request_merge: false
+      artifact_create: true
+      artifact_approve: false
+    data_classifications_allowed: [public, internal, confidential]
+
+  - id: security-reviewer
+    name: Security Reviewer
+    description: Independent review of authentication, secrets, BYOK key handling, and Supabase surfaces.
+    status: active
+    provider:
+      adapter: generic-mcp-agent
+      provider: configurable
+      interface: mcp
+      credential_ref: secret://project-brain/agents/security-reviewer
+    roles: [security_reviewer]
+    capabilities: [security_review, auth_review, dependency_risk, secrets_review]
+    allowed_tools: [project_brain.read, git.read, github.read, github.review, linear.read]
+    allowed_graph_nodes: [SPECIALIST_REVIEW]
+    permissions:
+      code_read: true
+      code_write: false
+      linear_write: false
+      pull_request_review: true
+      pull_request_merge: false
+      artifact_create: true
+      artifact_approve: false
+    data_classifications_allowed: [public, internal, confidential]
+
+  - id: qa-agent
+    name: QA Agent
+    description: Validates completed behavior against live acceptance criteria.
+    status: active
+    provider:
+      adapter: generic-mcp-agent
+      provider: configurable
+      interface: mcp
+      credential_ref: secret://project-brain/agents/qa-agent
+    roles: [qa]
+    capabilities: [acceptance_testing, regression_testing, evidence_collection]
+    allowed_tools: [project_brain.read, git.read, github.read, ci.read, linear.read]
+    allowed_graph_nodes: [QA]
+    permissions:
+      code_read: true
+      code_write: false
+      linear_write: false
+      pull_request_review: false
+      pull_request_merge: false
+      artifact_create: true
+      artifact_approve: false
+    data_classifications_allowed: [public, internal, confidential]
+
+bindings:
+  - id: autoblogr-project-manager
+    project_id: autoblogr
+    role: project_manager
+    agent_id: cowork-pm
+    priority: 100
+    status: active
+    scope: {}
+    routing_conditions: {}
+    permission_overrides: {}
+    context_policy:
+      token_budget: 2200
+      include: [ticket, milestones, dependencies, decisions, implementation_checkpoint, artifacts]
+      exclude: [full_diff, full_chat_history]
+
+  - id: autoblogr-developer
+    project_id: autoblogr
+    role: developer
+    agent_id: claude-code-fullstack
+    priority: 100
+    status: active
+    scope:
+      repository: ryanflash66/auto-blogr
+      base_branch: dev
+    routing_conditions: {}
+    permission_overrides: {}
+    context_policy:
+      token_budget: 3500
+      include: [ticket, acceptance_criteria, decisions, checkpoint, repository_pointers, artifacts]
+      exclude: [unrelated_roadmap, full_chat_history]
+
+  - id: autoblogr-reviewer
+    project_id: autoblogr
+    role: reviewer
+    agent_id: general-reviewer
+    priority: 100
+    status: active
+    scope: {}
+    routing_conditions: {}
+    permission_overrides: {}
+    context_policy:
+      token_budget: 4500
+      include: [ticket, acceptance_criteria, changed_files, decisions, test_evidence, artifacts]
+      exclude: [full_chat_history]
+
+  # Two things make this binding eligible, and they are different in kind.
+  #
+  # 1. AutoBlogr's own protected areas, from
+  #    .claude/steering/project-instructions.md "Protected areas".
+  # 2. The protected surfaces this project declares in project.yaml that the
+  #    shipped catalogue requires a security_reviewer for. Those patterns are
+  #    mirrored verbatim from DEFAULT_PROTECTED_SURFACE_RULES so the binding is
+  #    eligible for exactly what can demand it -- no wider, and never narrower.
+  #    Of the five catalogue surfaces that require this role, this project
+  #    declares three: authentication, secrets, payments.
+  #    production-infrastructure and destructive-migrations are not declared
+  #    under those names (this project says ci-workflows, deployment-config,
+  #    database-migrations), and an undeclared surface gates nothing -- an
+  #    unmapped declared surface gets a label-only rule with no specialist.
+  #
+  # If project.yaml's protected_surfaces or the catalogue changes, this list
+  # has to be revisited: nothing recomputes it.
+  - id: autoblogr-security-reviewer
+    project_id: autoblogr
+    role: security_reviewer
+    agent_id: security-reviewer
+    priority: 100
+    status: active
+    scope: {}
+    routing_conditions:
+      any:
+        # 1. AutoBlogr's own protected areas.
+        - paths_match:
+            - supabase/migrations/**
+            - supabase/functions/**
+            - src/lib/supabase**
+            - .github/workflows/**
+            - wp-plugin/**
+        # 2a. Catalogue surface "authentication".
+        - paths_match:
+            - src/auth/**
+            - "**/auth/**"
+            - "**/authentication/**"
+            - "**/authorization/**"
+            - "**/session/**"
+            - "**/login/**"
+        # 2b. Catalogue surface "secrets".
+        - paths_match:
+            - "**/.env*"
+            - "**/secrets/**"
+            - "**/credentials/**"
+            - "**/*credential*"
+            - "**/*secret*"
+        # 2c. Catalogue surface "payments".
+        - paths_match:
+            - src/billing/**
+            - "**/billing/**"
+            - "**/payments/**"
+            - "**/checkout/**"
+        # Every label the three catalogue rules above recognise, so a change
+        # that touches none of those paths but is labelled still routes here.
+        - labels_include:
+            - security-sensitive
+            - authentication
+            - secrets
+            - credentials
+            - payments
+            - billing
+    permission_overrides: {}
+    context_policy:
+      token_budget: 3500
+      include: [ticket, changed_files, security_decisions, test_evidence, artifacts]
+      exclude: [unrelated_roadmap, full_chat_history]
+
+  - id: autoblogr-qa
+    project_id: autoblogr
+    role: qa
+    agent_id: qa-agent
+    priority: 100
+    status: active
+    scope: {}
+    routing_conditions: {}
+    permission_overrides: {}
+    context_policy:
+      token_budget: 3000
+      include: [ticket, acceptance_criteria, implementation_summary, test_evidence, artifacts]
+      exclude: [full_chat_history]

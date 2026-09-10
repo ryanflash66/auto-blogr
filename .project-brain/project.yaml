@@ -1,0 +1,83 @@
+schema_version: 1
+
+# Project Brain registration for AutoBlogr.
+#
+# Committed logical identity and policy references only. Machine-local paths and
+# runtime state stay out of this directory, and credentials are never stored
+# here - only secret:// references resolved at the adapter boundary.
+
+project:
+  id: autoblogr
+  name: AutoBlogr
+  status: active
+
+systems:
+  linear:
+    team: DAR
+    project: AutoBlogr
+    credential_ref: secret://project-brain/linear
+  github:
+    repository: ryanflash66/auto-blogr
+    default_branch: main
+    credential_ref: secret://project-brain/github
+  ci:
+    provider: github-actions
+    # The merge gate named in .claude/steering/quality-gates.md. "PHPUnit and
+    # coverage" is deliberately NOT listed: it only runs on wp-plugin/** paths,
+    # so requiring it would block every PR that does not touch the plugin.
+    required_checks:
+      - Lint and build
+
+knowledge:
+  namespace: Projects/AutoBlogr
+  approved_statuses:
+    - approved
+
+artifacts:
+  namespace: autoblogr
+  default_retention: working
+  permanent_types:
+    - specification
+    - architecture-decision
+    - qa-report
+    - release-record
+    - final-deliverable
+
+work_graph:
+  id: standard-delivery
+  version: 1
+
+context:
+  policy_ref: context-policy.yaml
+
+safety:
+  # ADR-0003: safe auto-merge to the integration branch is the default.
+  # Autonomous work merges to `dev` on green required checks; promotion
+  # `dev` -> `main` is always human. Branch policy lives in branching.yaml.
+  #
+  # This is ARCHITECTURE.md 14.4 "Mode 2: Safe auto-merge", which the project's
+  # own steering documents call "Mode 3". It is deliberately NOT
+  # `bounded-autonomous`, which would permit autonomous release.
+  autonomy_mode: safe-auto-merge
+  policy_ref: global/safety-1
+  # Derived from .claude/steering/safety-rules.md and the "Protected areas"
+  # section of .claude/steering/project-instructions.md. Touching any of these
+  # requires specialist review, human approval, or both.
+  protected_surfaces:
+    - authentication
+    - authorization
+    - secrets
+    - byok-keys
+    - payments
+    - billing
+    - user-data-pii
+    - database-migrations
+    - supabase-client
+    - supabase-edge-functions
+    - ci-workflows
+    - deployment-config
+    - wp-plugin
+    - major-dependency-upgrades
+    - major-architecture-changes
+    - public-api-contracts
+    - production-release
