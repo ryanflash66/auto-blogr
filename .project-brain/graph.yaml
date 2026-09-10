@@ -1,0 +1,177 @@
+schema_version: 1
+
+graph:
+  id: standard-delivery
+  version: 1
+  name: Standard Multi-Agent Delivery
+  start_node: SYNC_STATE
+
+nodes:
+  - key: SYNC_STATE
+    kind: system
+    entry_conditions: {}
+    exit_conditions: { required_sources_current: true }
+    allowed_tools: [linear.read, git.read, github.read, ci.read, obsidian.read, artifact.inbox]
+    allowed_actions: [synchronize]
+    protected_surfaces: []
+    required_evidence: [source_snapshots, sync_health]
+    context_profile: system
+
+  - key: SELECT_WORK
+    kind: system
+    entry_conditions: { synchronization_complete: true }
+    exit_conditions: { selection_result_recorded: true }
+    allowed_tools: [linear.read, project_brain.read]
+    allowed_actions: [select_eligible_issue]
+    protected_surfaces: []
+    required_evidence: [eligibility_explanation]
+    context_profile: system
+
+  - key: HYDRATE_CONTEXT
+    kind: system
+    entry_conditions: { issue_selected: true }
+    exit_conditions: { valid_capsule_created: true }
+    allowed_tools: [project_brain.read, artifact.read]
+    allowed_actions: [compile_context]
+    protected_surfaces: []
+    required_evidence: [capsule_manifest, capsule_hash]
+    context_profile: developer
+
+  - key: PLAN_OR_CLARIFY
+    kind: agent
+    required_role: project_manager
+    entry_conditions: { criteria_testable_known: true }
+    exit_conditions: { work_actionable: true }
+    allowed_tools: [project_brain.read, linear.read, linear.write, artifact.write]
+    allowed_actions: [clarify_scope, update_acceptance_criteria, checkpoint]
+    protected_surfaces: [scope]
+    required_evidence: [live_issue_version]
+    context_profile: project_manager
+
+  - key: IMPLEMENT
+    kind: agent
+    required_role: developer
+    entry_conditions: { work_actionable: true, capsule_current: true }
+    exit_conditions: { implementation_result_recorded: true }
+    allowed_tools: [project_brain.read, git.read, git.write, github.pull_request]
+    allowed_actions: [inspect, plan, modify_code, add_tests, commit, open_pull_request]
+    protected_surfaces: [authentication, secrets, payments, production-infrastructure, destructive-migrations]
+    required_evidence: [changed_paths, commit, implementation_summary]
+    context_profile: developer
+    retry:
+      max_attempts: 3
+      repair_node: REPAIR
+
+  - key: REPAIR
+    kind: agent
+    required_role: developer
+    entry_conditions: { verification_failed: true }
+    exit_conditions: { repair_result_recorded: true }
+    allowed_tools: [project_brain.read, git.read, git.write]
+    allowed_actions: [diagnose, modify_code, add_tests, commit]
+    protected_surfaces: [authentication, secrets, payments, production-infrastructure, destructive-migrations]
+    required_evidence: [failure_analysis, changed_paths, commit]
+    context_profile: developer
+
+  - key: VERIFY
+    kind: system
+    entry_conditions: { implementation_result_recorded: true }
+    exit_conditions: { verification_result_recorded: true }
+    allowed_tools: [ci.read, git.read]
+    allowed_actions: [run_quality_gate, record_evidence]
+    protected_surfaces: []
+    required_evidence: [commit, checks, conclusions]
+    context_profile: system
+
+  - key: REVIEW
+    kind: agent
+    required_role: reviewer
+    entry_conditions: { verification_passed: true }
+    exit_conditions: { review_result_recorded: true }
+    allowed_tools: [project_brain.read, git.read, github.read, github.review]
+    allowed_actions: [review, approve, request_changes, escalate]
+    protected_surfaces: []
+    required_evidence: [review_findings]
+    context_profile: reviewer
+
+  - key: SPECIALIST_REVIEW
+    kind: agent
+    required_role: security_reviewer
+    entry_conditions: { specialist_review_required: true }
+    exit_conditions: { specialist_review_result_recorded: true }
+    allowed_tools: [project_brain.read, git.read, github.read, github.review]
+    allowed_actions: [review, approve, request_changes, escalate]
+    protected_surfaces: [authentication, secrets, payments]
+    required_evidence: [specialist_findings]
+    context_profile: security_reviewer
+
+  - key: RELEASE_GATE
+    kind: approval
+    entry_conditions: { reviews_approved: true, qa_passed: true, required_ci_passed: true }
+    exit_conditions: { release_authorized: true }
+    allowed_tools: [github.read, ci.read, project_brain.approvals]
+    allowed_actions: [validate_release_gate, request_approval]
+    protected_surfaces: [merge, production-release]
+    required_evidence: [head_commit, required_checks, approvals]
+    context_profile: release
+
+  - key: QA
+    kind: agent
+    required_role: qa
+    entry_conditions: { reviews_approved: true }
+    exit_conditions: { qa_result_recorded: true }
+    allowed_tools: [project_brain.read, git.read, github.read, ci.read, linear.read]
+    allowed_actions: [validate_acceptance_criteria, record_evidence, pass, fail]
+    protected_surfaces: []
+    required_evidence: [qa_findings, acceptance_results]
+    context_profile: qa
+
+  - key: CHECKPOINT
+    kind: system
+    entry_conditions: { terminal_delivery_state_known: true }
+    exit_conditions: { checkpoint_persisted: true }
+    allowed_tools: [project_brain.write, artifact.write]
+    allowed_actions: [write_checkpoint, ingest_artifacts]
+    protected_surfaces: []
+    required_evidence: [checkpoint]
+    context_profile: system
+
+  - key: RECONCILE
+    kind: system
+    entry_conditions: { checkpoint_persisted: true }
+    exit_conditions: { reconciliation_complete: true }
+    allowed_tools: [project_brain.read, linear.read, git.read, github.read, ci.read, obsidian.read]
+    allowed_actions: [evaluate_findings, apply_safe_corrections]
+    protected_surfaces: []
+    required_evidence: [reconciliation_report]
+    context_profile: system
+
+  - key: END
+    kind: terminal
+    entry_conditions: { reconciliation_complete: true }
+    exit_conditions: {}
+    allowed_tools: []
+    allowed_actions: []
+    protected_surfaces: []
+    required_evidence: []
+    context_profile: system
+
+edges:
+  - { id: sync-select, from: SYNC_STATE, to: SELECT_WORK, priority: 100, when: { synchronization_complete: true } }
+  - { id: select-hydrate, from: SELECT_WORK, to: HYDRATE_CONTEXT, priority: 100, when: { issue_selected: true } }
+  - { id: hydrate-plan, from: HYDRATE_CONTEXT, to: PLAN_OR_CLARIFY, priority: 100, when: { capsule_created: true } }
+  - { id: plan-implement, from: PLAN_OR_CLARIFY, to: IMPLEMENT, priority: 100, when: { work_actionable: true } }
+  - { id: implement-verify, from: IMPLEMENT, to: VERIFY, priority: 100, when: { implementation_result_recorded: true } }
+  - { id: verify-repair, from: VERIFY, to: REPAIR, priority: 10, when: { verification_failed: true } }
+  - { id: repair-verify, from: REPAIR, to: VERIFY, priority: 100, when: { repair_result_recorded: true } }
+  - { id: verify-review, from: VERIFY, to: REVIEW, priority: 100, when: { verification_passed: true } }
+  - { id: review-specialist, from: REVIEW, to: SPECIALIST_REVIEW, priority: 10, when: { specialist_review_required: true } }
+  - { id: review-implement, from: REVIEW, to: IMPLEMENT, priority: 20, when: { changes_requested: true } }
+  - { id: review-qa, from: REVIEW, to: QA, priority: 100, when: { review_approved: true, specialist_review_required: false } }
+  - { id: specialist-implement, from: SPECIALIST_REVIEW, to: IMPLEMENT, priority: 10, when: { changes_requested: true } }
+  - { id: specialist-qa, from: SPECIALIST_REVIEW, to: QA, priority: 100, when: { specialist_review_approved: true } }
+  - { id: qa-implement, from: QA, to: IMPLEMENT, priority: 10, when: { qa_failed: true } }
+  - { id: qa-release, from: QA, to: RELEASE_GATE, priority: 100, when: { qa_passed: true } }
+  - { id: release-checkpoint, from: RELEASE_GATE, to: CHECKPOINT, priority: 100, when: { release_authorized: true } }
+  - { id: checkpoint-reconcile, from: CHECKPOINT, to: RECONCILE, priority: 100, when: { checkpoint_persisted: true } }
+  - { id: reconcile-end, from: RECONCILE, to: END, priority: 100, when: { reconciliation_complete: true } }
