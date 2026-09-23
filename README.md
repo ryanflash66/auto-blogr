@@ -8,11 +8,18 @@ AI-powered blog content generator with WordPress publishing.
 # Install dependencies
 npm install
 
+# Configure Supabase (required)
+cp .env.example .env.local
+# then fill in VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+
 # Start the app
 npm run dev
 ```
 
-That's it! The app runs locally with all data stored in your browser.
+AutoBlogr uses **Supabase** for accounts and data: you sign in, and your ideas
+and posts are stored in Postgres scoped to your user. The app cannot start
+without `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` — both are under
+Project Settings → API in your Supabase dashboard. See `.env.example`.
 
 ## AI Features (Optional)
 
@@ -41,7 +48,10 @@ VITE_OPENROUTER_API_KEY=your_key_here
 - React 18 + Vite
 - TailwindCSS + shadcn/ui
 - OpenRouter (AI)
-- Local Storage (data persistence)
+- Supabase (authentication and data persistence)
+
+The only thing still kept in the browser is your OpenRouter API key, in
+`localStorage` (see AI Features above).
 
 ## WordPress Plugin (`wp-plugin/`)
 
