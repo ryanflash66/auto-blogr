@@ -26,13 +26,12 @@ Project Settings → API in your Supabase dashboard. See `.env.example`.
 To enable AI content generation, you need an **OpenRouter API key**:
 
 1. Go to [openrouter.ai/keys](https://openrouter.ai/keys)
-2. Create a free account and get an API key
-3. When you first try to generate content, you'll be prompted to enter it
+2. Create an account and get an API key
+3. In the app, open **Profile**, paste it into **OpenRouter API key**, and save
 
-Or set it in a `.env` file:
-```
-VITE_OPENROUTER_API_KEY=your_key_here
-```
+The key is stored in your own Supabase profile row (only you can read it) and
+is used for both text and hero images. There is no environment-variable
+fallback: anything prefixed `VITE_` is bundled into the public JavaScript.
 
 ## Features
 
@@ -49,9 +48,6 @@ VITE_OPENROUTER_API_KEY=your_key_here
 - TailwindCSS + shadcn/ui
 - OpenRouter (AI)
 - Supabase (authentication and data persistence)
-
-The only thing still kept in the browser is your OpenRouter API key, in
-`localStorage` (see AI Features above).
 
 ## WordPress Plugin (`wp-plugin/`)
 
