@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { InvokeLLM, GenerateImage } from './openrouter';
+
+const { userStorageMock } = vi.hoisted(() => ({
+  userStorageMock: { get: vi.fn() },
+}));
+
+vi.mock('@/lib/supabaseStorage', () => ({ userStorage: userStorageMock }));
+
+import { InvokeLLM, GenerateImage, MISSING_KEY_MESSAGE } from './openrouter';
 
 // A minimal stand-in for a successful chat/completions response whose assistant
 // message content is `content`.
@@ -15,16 +22,70 @@ const errorResponse = (status, body = {}) => ({
   json: async () => body,
 });
 
+const withProfileKey = (key) =>
+  userStorageMock.get.mockResolvedValue({ id: 'user-1', openrouter_api_key: key });
+
 describe('InvokeLLM', () => {
   beforeEach(() => {
-    localStorage.clear();
-    // Seed a key so getApiKey() never falls through to window.prompt().
-    localStorage.setItem('openrouter_api_key', 'test-key');
     vi.restoreAllMocks();
+    userStorageMock.get.mockReset();
+    withProfileKey('test-key');
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
+  });
+
+  it('sends the key from the user profile as a bearer token', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(chatResponse('hello'));
+
+    await InvokeLLM({ prompt: 'hi' });
+
+    const [, init] = fetchSpy.mock.calls[0];
+    expect(init.headers.Authorization).toBe('Bearer test-key');
+  });
+
+  it('trims whitespace around the stored key', async () => {
+    withProfileKey('  test-key  ');
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(chatResponse('hello'));
+
+    await InvokeLLM({ prompt: 'hi' });
+
+    expect(fetchSpy.mock.calls[0][1].headers.Authorization).toBe('Bearer test-key');
+  });
+
+  it('throws the Profile-page message and never calls fetch when no key is saved', async () => {
+    withProfileKey(null);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    await expect(InvokeLLM({ prompt: 'x' })).rejects.toThrow(MISSING_KEY_MESSAGE);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('treats a whitespace-only key as missing', async () => {
+    withProfileKey('   ');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    await expect(InvokeLLM({ prompt: 'x' })).rejects.toThrow(MISSING_KEY_MESSAGE);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('ignores VITE_OPENROUTER_API_KEY, localStorage and window.prompt', async () => {
+    withProfileKey(undefined);
+    vi.stubEnv('VITE_OPENROUTER_API_KEY', 'env-key');
+    localStorage.setItem('openrouter_api_key', 'stale-local-key');
+    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('typed-key');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    await expect(InvokeLLM({ prompt: 'x' })).rejects.toThrow(MISSING_KEY_MESSAGE);
+    expect(promptSpy).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    localStorage.clear();
   });
 
   it('parses a clean JSON response when a schema is requested', async () => {
@@ -72,13 +133,16 @@ describe('InvokeLLM', () => {
     expect(result).toBe('just some prose, not parsed');
   });
 
-  it('throws and clears the stored key on HTTP 401', async () => {
+  it('throws on HTTP 401 without touching localStorage', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(errorResponse(401));
+    const removeSpy = vi.spyOn(Storage.prototype, 'removeItem');
+    const setSpy = vi.spyOn(Storage.prototype, 'setItem');
 
     await expect(InvokeLLM({ prompt: 'x' })).rejects.toThrow(
-      'Invalid API key. Please refresh and try again.'
+      'Invalid API key. Update it on the Profile page.'
     );
-    expect(localStorage.getItem('openrouter_api_key')).toBeNull();
+    expect(removeSpy).not.toHaveBeenCalled();
+    expect(setSpy).not.toHaveBeenCalled();
   });
 
   it('throws with the API-provided message on a non-401 error', async () => {
@@ -87,24 +151,22 @@ describe('InvokeLLM', () => {
     );
 
     await expect(InvokeLLM({ prompt: 'x' })).rejects.toThrow('boom');
-    // Non-401 errors must not clear the key.
-    expect(localStorage.getItem('openrouter_api_key')).toBe('test-key');
   });
 });
 
 describe('GenerateImage', () => {
   beforeEach(() => {
-    localStorage.clear();
-    localStorage.setItem('openrouter_api_key', 'test-key');
     vi.restoreAllMocks();
+    userStorageMock.get.mockReset();
+    withProfileKey('test-key');
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('returns the image url on success', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+  it('returns the image url on success, using the profile key', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ data: [{ url: 'https://img.example/pic.png' }] }),
@@ -112,6 +174,15 @@ describe('GenerateImage', () => {
 
     const result = await GenerateImage({ prompt: 'a cat' });
     expect(result).toEqual({ url: 'https://img.example/pic.png' });
+    expect(fetchSpy.mock.calls[0][1].headers.Authorization).toBe('Bearer test-key');
+  });
+
+  it('throws the Profile-page message when no key is saved', async () => {
+    withProfileKey('');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    await expect(GenerateImage({ prompt: 'a cat' })).rejects.toThrow(MISSING_KEY_MESSAGE);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('returns the placeholder url when fetch rejects', async () => {
