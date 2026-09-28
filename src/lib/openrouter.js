@@ -3,24 +3,19 @@
  * Provides LLM and image generation capabilities
  */
 
+import { userStorage } from '@/lib/supabaseStorage';
+
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 
-// Get API key from env or prompt user
-const getApiKey = () => {
-  let key = import.meta.env.VITE_OPENROUTER_API_KEY;
-  
-  if (!key) {
-    key = localStorage.getItem('openrouter_api_key');
-  }
-  
-  if (!key) {
-    key = prompt('Enter your OpenRouter API key (get one free at openrouter.ai/keys):');
-    if (key) {
-      localStorage.setItem('openrouter_api_key', key);
-    }
-  }
-  
-  return key;
+export const MISSING_KEY_MESSAGE =
+  'Add your OpenRouter API key on the Profile page to generate content.';
+
+// Bring-your-own-key: the signed-in user's key lives in their RLS-scoped
+// profile row. There is deliberately no env fallback: Vite inlines VITE_*
+// values into the public bundle, which would share one key with every visitor.
+const getApiKey = async () => {
+  const profile = await userStorage.get();
+  return profile?.openrouter_api_key?.trim() || null;
 };
 
 // Default models. OpenRouter slugs use dot notation ('claude-opus-4.8'), which
@@ -36,12 +31,12 @@ export const InvokeLLM = async ({
   prompt, 
   response_json_schema, 
   model = DEFAULT_TEXT_MODEL,
-  max_tokens = 4096 
+  max_tokens = 4096
 }) => {
-  const apiKey = getApiKey();
-  
+  const apiKey = await getApiKey();
+
   if (!apiKey) {
-    throw new Error('OpenRouter API key required. Get one at openrouter.ai/keys');
+    throw new Error(MISSING_KEY_MESSAGE);
   }
 
   const messages = [{ role: 'user', content: prompt }];
@@ -70,8 +65,7 @@ export const InvokeLLM = async ({
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       if (response.status === 401) {
-        localStorage.removeItem('openrouter_api_key');
-        throw new Error('Invalid API key. Please refresh and try again.');
+        throw new Error('Invalid API key. Update it on the Profile page.');
       }
       throw new Error(error.error?.message || `OpenRouter API error: ${response.status}`);
     }
@@ -105,12 +99,12 @@ export const InvokeLLM = async ({
 export const GenerateImage = async ({ 
   prompt, 
   model = DEFAULT_IMAGE_MODEL,
-  size = '1792x1024' 
+  size = '1792x1024'
 }) => {
-  const apiKey = getApiKey();
-  
+  const apiKey = await getApiKey();
+
   if (!apiKey) {
-    throw new Error('OpenRouter API key required. Get one at openrouter.ai/keys');
+    throw new Error(MISSING_KEY_MESSAGE);
   }
 
   try {
