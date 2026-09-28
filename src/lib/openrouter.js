@@ -4,11 +4,13 @@
  */
 
 import { userStorage } from '@/lib/supabaseStorage';
+import { uploadHeroImage } from '@/lib/heroImages';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 
 export const MISSING_KEY_MESSAGE =
   'Add your OpenRouter API key on the Profile page to generate content.';
+const INVALID_KEY_MESSAGE = 'Invalid API key. Update it on the Profile page.';
 
 // Bring-your-own-key: the signed-in user's key lives in their RLS-scoped
 // profile row. There is deliberately no env fallback: Vite inlines VITE_*
@@ -22,7 +24,10 @@ const getApiKey = async () => {
 // differs from Anthropic's own API ids ('claude-opus-4-8') — verify any change
 // against https://openrouter.ai/api/v1/models before shipping it.
 const DEFAULT_TEXT_MODEL = 'anthropic/claude-opus-4.8';
-const DEFAULT_IMAGE_MODEL = 'openai/dall-e-3';
+// Seedream 4.5 documents 16:9 output on OpenRouter's Image API, at about
+// $0.04-0.05 per image (Sept 2026). Re-check GET /api/v1/images/models before
+// swapping it: models accept different aspect ratios.
+const DEFAULT_IMAGE_MODEL = 'bytedance-seed/seedream-4.5';
 
 /**
  * Invoke LLM for text generation
@@ -65,7 +70,7 @@ export const InvokeLLM = async ({
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       if (response.status === 401) {
-        throw new Error('Invalid API key. Update it on the Profile page.');
+        throw new Error(INVALID_KEY_MESSAGE);
       }
       throw new Error(error.error?.message || `OpenRouter API error: ${response.status}`);
     }
@@ -94,12 +99,14 @@ export const InvokeLLM = async ({
 };
 
 /**
- * Generate an image using OpenRouter
+ * Generate an image with OpenRouter's Image API and store it, returning a
+ * durable URL. Throws on any failure (callers decide whether to carry on
+ * without an image); it never hands back a placeholder.
  */
-export const GenerateImage = async ({ 
-  prompt, 
+export const GenerateImage = async ({
+  prompt,
   model = DEFAULT_IMAGE_MODEL,
-  size = '1792x1024'
+  aspect_ratio = '16:9'
 }) => {
   const apiKey = await getApiKey();
 
@@ -107,43 +114,34 @@ export const GenerateImage = async ({
     throw new Error(MISSING_KEY_MESSAGE);
   }
 
-  try {
-    const response = await fetch(`${OPENROUTER_API_URL}/images/generations`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'AutoBlogr',
-      },
-      body: JSON.stringify({
-        model,
-        prompt,
-        n: 1,
-        size,
-      }),
-    });
+  const response = await fetch(`${OPENROUTER_API_URL}/images`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': window.location.origin,
+      'X-Title': 'AutoBlogr',
+    },
+    body: JSON.stringify({ model, prompt, aspect_ratio }),
+  });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.error?.message || `Image generation error: ${response.status}`);
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      throw new Error(INVALID_KEY_MESSAGE);
     }
-
-    const data = await response.json();
-    const imageUrl = data.data?.[0]?.url;
-
-    if (!imageUrl) {
-      throw new Error('No image URL in response');
-    }
-
-    return { url: imageUrl };
-  } catch (error) {
-    console.error('GenerateImage error:', error);
-    // Return placeholder on error
-    return {
-      url: `https://placehold.co/1792x1024/1a1a2e/eaeaea?text=${encodeURIComponent('Image Generation Failed')}`
-    };
+    throw new Error(error.error?.message || `Image generation error: ${response.status}`);
   }
+
+  const data = await response.json();
+  const image = data.data?.[0];
+
+  if (!image?.b64_json) {
+    throw new Error('The image model returned no image.');
+  }
+
+  const url = await uploadHeroImage({ base64: image.b64_json, mediaType: image.media_type });
+  return { url };
 };
 
 export default {
