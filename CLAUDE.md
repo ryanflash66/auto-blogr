@@ -1,7 +1,7 @@
 <!-- steering:begin -->
 # AutoBlogr — AI steering
 
-**What this is:** AutoBlogr is being converted from a single-user localStorage tool into a hosted, multi-user **Supabase** SaaS (Auth + DB + Storage + Edge Functions) with **bring-your-own-key** AI (each user stores their own OpenRouter + image-provider key in their `profiles` row). Root app: **React 18 + Vite 6**, JS with typecheck (`jsconfig.json`), Tailwind + shadcn/ui, `@supabase/supabase-js`, TanStack Query, Vitest. Also in the repo: `wp-plugin/` (PHP WordPress plugin, own PHPUnit CI) and a **stale** `autoblogr-web/` sub-app (see DAR-388).
+**What this is:** AutoBlogr is a **personal, non-commercial** tool (not for sale), moved from a single-user localStorage app onto hosted **Supabase** (Auth + DB + Storage + Edge Functions) with **bring-your-own-key** AI (each user stores their own OpenRouter key in their `profiles` row). It stays on free plans (Supabase Free, Vercel Hobby) and public sign-up is off; the owner creates any accounts. Don't add or recommend billing, paid tiers, custom SMTP, email confirmation, or growth/scale work. Root app: **React 18 + Vite 6**, JS with typecheck (`jsconfig.json`), Tailwind + shadcn/ui, `@supabase/supabase-js`, TanStack Query, Vitest. Also in the repo: `wp-plugin/` (PHP WordPress plugin, own PHPUnit CI) and a **stale** `autoblogr-web/` sub-app (see DAR-388).
 
 ## Four sources of truth
 1. **Linear** is the source of truth for work — team **Dark7eaper**, project **AutoBlogr** (keys `DAR-###`).
