@@ -33,6 +33,33 @@ The key is stored in your own Supabase profile row (only you can read it) and
 is used for both text and hero images. There is no environment-variable
 fallback: anything prefixed `VITE_` is bundled into the public JavaScript.
 
+Hero images are generated through OpenRouter's image API with the same key and
+saved to the public `hero-images` Supabase Storage bucket, under a folder named
+after your user id. If image generation fails, the post is still saved, without
+an image.
+
+## WordPress Publishing
+
+1. In WordPress, create an Application Password: **Users → Profile →
+   Application Passwords**.
+2. In the app, open **WordPress**, add the site (URL, username, that
+   Application Password), and click **Test**.
+3. Open a post in the editor, click **Publish**, and pick the site.
+
+Publishing runs **in your browser**: the app calls the site's REST API
+(`/wp-json/wp/v2/`) directly with Basic auth to upload the hero image, find or
+create categories and tags, and create the post. So:
+
+- The site must allow cross-origin REST requests from the app's domain (CORS).
+  If **Test** fails with a network error while the credentials are right,
+  CORS is the likely cause.
+- The Application Password is stored in your `wordpress_sites` row. Row-level
+  security limits it to your account, and it is sent to your browser when
+  sites are listed.
+
+A server-side publish path (a Supabase Edge Function) is planned only if
+browser publishing proves unreliable (DAR-386).
+
 ## Features
 
 - **Blog Ideas** - Create and organize content ideas
