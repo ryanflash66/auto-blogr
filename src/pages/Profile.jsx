@@ -310,18 +310,18 @@ export default function Profile() {
           </Card>
 
           {/* AI Provider Key */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-gray-100">
+          <Card className="border-0 shadow-lift">
+            <CardHeader className="border-b bg-muted/50">
               <CardTitle className="flex items-center gap-2">
-                <KeyRound className="w-5 h-5 text-emerald-600" />
+                <KeyRound className="w-5 h-5 text-primary" />
                 AI Provider
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-3">
               {hasApiKey && !replacingKey ? (
                 <div className="flex items-center justify-between">
-                  <p className="flex items-center gap-2 text-base font-semibold text-gray-900">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <p className="flex items-center gap-2 text-base font-semibold text-foreground">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
                     OpenRouter key saved
                   </p>
                   <Button type="button" variant="outline" onClick={() => setReplacingKey(true)}>
@@ -355,7 +355,7 @@ export default function Profile() {
                       </Button>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Used for AI generation. Get one at openrouter.ai/keys. Once saved it is never shown again.
                   </p>
                 </div>
