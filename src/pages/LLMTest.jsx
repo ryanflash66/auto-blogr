@@ -34,21 +34,21 @@ export default function LLMTest() {
   };
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="space-y-7">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">LLM Integration Test</h1>
-          <p className="text-lg text-gray-600 mt-1">
+          <h1 className="text-3xl lg:text-4xl font-bold text-foreground">LLM Integration Test</h1>
+          <p className="text-lg text-muted-foreground mt-1">
             Test the OpenRouter LLM integration by sending a raw prompt.
           </p>
         </div>
 
         {/* Prompt Input Card */}
-        <Card className="border-0 shadow-lg">
+        <Card className="border-0 shadow-lift">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-emerald-600" />
+              <Sparkles className="w-5 h-5 text-primary" />
               Send a Prompt
             </CardTitle>
           </CardHeader>
@@ -66,7 +66,7 @@ export default function LLMTest() {
             <Button
               onClick={handleTestLLM}
               disabled={loading}
-              className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 px-8"
+              className="px-8"
             >
               {loading ? (
                 <>
@@ -84,24 +84,24 @@ export default function LLMTest() {
 
         {/* Response Display Card */}
         {(response || loading || error) && (
-          <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lift">
             <CardHeader>
               <CardTitle>LLM Response</CardTitle>
             </CardHeader>
             <CardContent>
               {loading && (
                 <div className="flex items-center justify-center p-8">
-                  <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
-                  <p className="ml-4 text-lg text-gray-600">Waiting for response...</p>
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  <p className="ml-4 text-lg text-muted-foreground">Waiting for response...</p>
                 </div>
               )}
               {error && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-800">{error}</p>
+                <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+                  <p className="text-destructive">{error}</p>
                 </div>
               )}
               {response && (
-                <pre className="p-4 bg-gray-900 text-white rounded-lg whitespace-pre-wrap text-sm overflow-x-auto">
+                <pre className="p-4 bg-foreground text-white rounded-lg whitespace-pre-wrap text-sm overflow-x-auto">
                   <code>{response}</code>
                 </pre>
               )}

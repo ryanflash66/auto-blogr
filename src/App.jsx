@@ -7,13 +7,14 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { ThemeProvider } from '@/lib/theme';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Login from './pages/Login';
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <div className="flex flex-col items-center gap-3 text-gray-500">
-      <div className="h-8 w-8 rounded-full border-2 border-gray-300 border-t-emerald-600 animate-spin" />
+    <div className="flex flex-col items-center gap-3 text-muted-foreground">
+      <div className="h-8 w-8 rounded-full border-2 border-border border-t-primary animate-spin" />
       <span className="text-sm font-medium">Loading…</span>
     </div>
   </div>
@@ -65,14 +66,16 @@ function AuthenticatedApp() {
 
 function App() {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <ErrorBoundary>
-          <AuthenticatedApp />
-        </ErrorBoundary>
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <ErrorBoundary>
+            <AuthenticatedApp />
+          </ErrorBoundary>
+          <Toaster />
+        </QueryClientProvider>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

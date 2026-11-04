@@ -2,157 +2,184 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  AutoBlogr design tokens.
 
-/* :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-} */
-
-
-
+  One brand hue (ink green) carries intent; everything else is a neutral paper
+  scale. Status colours are their own token set so a chip's meaning never
+  depends on a page picking the right Tailwind shade by hand.
+*/
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Paper + ink */
+    --background: 38 24% 98%;
+    --foreground: 210 16% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 210 16% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --popover-foreground: 210 16% 12%;
+
+    /* Brand */
+    --primary: 163 58% 26%;
+    --primary-foreground: 40 30% 98%;
+
+    --secondary: 38 16% 94%;
+    --secondary-foreground: 210 16% 18%;
+    --muted: 38 16% 95%;
+    --muted-foreground: 213 9% 44%;
+    --accent: 163 28% 94%;
+    --accent-foreground: 163 58% 22%;
+
+    --destructive: 2 68% 46%;
+    --destructive-foreground: 40 30% 98%;
+
+    --border: 36 14% 88%;
+    --input: 36 14% 86%;
+    --ring: 163 52% 32%;
+
+    --radius: 0.625rem;
+
+    /* Shell surfaces */
+    --sidebar-background: 38 22% 96%;
+    --sidebar-foreground: 213 10% 38%;
+    --sidebar-primary: 163 58% 26%;
+    --sidebar-primary-foreground: 40 30% 98%;
+    --sidebar-accent: 163 28% 93%;
+    --sidebar-accent-foreground: 163 58% 22%;
+    --sidebar-border: 36 14% 89%;
+    --sidebar-ring: 163 52% 32%;
+
+    /* Status: one pair per canonical post/idea status */
+    --status-draft: 213 9% 40%;
+    --status-draft-bg: 213 14% 94%;
+    --status-generating: 32 78% 36%;
+    --status-generating-bg: 36 86% 93%;
+    --status-ready: 214 68% 40%;
+    --status-ready-bg: 214 86% 95%;
+    --status-published: 163 58% 28%;
+    --status-published-bg: 163 44% 93%;
+    --status-scheduled: 268 44% 44%;
+    --status-scheduled-bg: 268 60% 96%;
+
+    /* Charts: brand hue, stepped */
+    --chart-1: 163 54% 30%;
+    --chart-2: 190 46% 40%;
+    --chart-3: 214 52% 46%;
+    --chart-4: 32 64% 48%;
+    --chart-5: 268 34% 50%;
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 212 18% 8%;
+    --foreground: 40 18% 94%;
+    --card: 212 15% 11%;
+    --card-foreground: 40 18% 94%;
+    --popover: 212 15% 12%;
+    --popover-foreground: 40 18% 94%;
+
+    --primary: 160 46% 48%;
+    --primary-foreground: 212 24% 8%;
+
+    --secondary: 212 12% 17%;
+    --secondary-foreground: 40 18% 92%;
+    --muted: 212 12% 16%;
+    --muted-foreground: 213 10% 62%;
+    --accent: 212 14% 19%;
+    --accent-foreground: 160 46% 70%;
+
+    --destructive: 2 62% 52%;
+    --destructive-foreground: 40 18% 96%;
+
+    --border: 212 10% 21%;
+    --input: 212 10% 24%;
+    --ring: 160 42% 44%;
+
+    --sidebar-background: 212 17% 10%;
+    --sidebar-foreground: 213 10% 64%;
+    --sidebar-primary: 160 46% 48%;
+    --sidebar-primary-foreground: 212 24% 8%;
+    --sidebar-accent: 212 14% 17%;
+    --sidebar-accent-foreground: 160 46% 70%;
+    --sidebar-border: 212 10% 20%;
+    --sidebar-ring: 160 42% 44%;
+
+    --status-draft: 213 10% 70%;
+    --status-draft-bg: 213 10% 20%;
+    --status-generating: 36 76% 64%;
+    --status-generating-bg: 34 40% 18%;
+    --status-ready: 214 76% 72%;
+    --status-ready-bg: 214 40% 20%;
+    --status-published: 160 50% 62%;
+    --status-published-bg: 163 34% 16%;
+    --status-scheduled: 268 60% 76%;
+    --status-scheduled-bg: 268 26% 22%;
+
+    --chart-1: 160 46% 50%;
+    --chart-2: 190 44% 56%;
+    --chart-3: 214 58% 64%;
+    --chart-4: 34 68% 58%;
+    --chart-5: 268 44% 66%;
   }
 }
-
-
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv05" 1, "ss01" 1;
+  }
+
+  /* Serif is the product voice, reserved for page and section titles. Lower
+     levels (list-item headings) stay sans so dense lists read as UI, not copy. */
+  h1,
+  h2 {
+    @apply font-serif tracking-tight text-foreground;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  ::selection {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  /* Quiet, consistent scrollbars inside shell panes. */
+  @supports (scrollbar-width: thin) {
+    .scroll-quiet {
+      scrollbar-width: thin;
+      scrollbar-color: hsl(var(--border)) transparent;
+    }
+  }
+}
+
+@layer utilities {
+  /* Numbers in metrics must not shift width as they tick. */
+  .nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Hairline rule that survives both themes without a shadow. */
+  .hairline {
+    @apply border border-border;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

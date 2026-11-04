@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { BlogIdea } from "@/services/blogIdeas";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "@/components/ui/use-toast";
 import { Plus } from "lucide-react";
 
@@ -91,23 +92,20 @@ export default function Ideas() {
   };
 
   return (
-    <div className="p-6 lg:p-8">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Blog Ideas</h1>
-          <p className="text-lg text-gray-600 mt-1">Create and manage your content ideas</p>
-        </div>
-        <Button
-          onClick={() => setShowForm(true)}
-          className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-lg text-white px-6 py-3 h-auto"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          New Idea
-        </Button>
-      </div>
+    <div className="space-y-7">
+      <PageHeader
+        eyebrow="Content"
+        title="Blog ideas"
+        description="Capture a working title and a brief, then generate drafts from it."
+        actions={
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4" />
+            New idea
+          </Button>
+        }
+      />
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Ideas List */}
         <div className="lg:col-span-2">
           <IdeaList

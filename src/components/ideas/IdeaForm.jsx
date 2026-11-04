@@ -73,15 +73,15 @@ export default function IdeaForm({ onSubmit, onCancel }) {
         className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
         <Card className="border-0 shadow-2xl">
-          <CardHeader className="border-b bg-gradient-to-r from-emerald-50 to-blue-50">
+          <CardHeader className="border-b bg-muted/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
                   <Lightbulb className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <CardTitle className="text-xl">New Blog Idea</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">Tell us about your content idea</p>
+                  <p className="text-sm text-muted-foreground mt-1">Tell us about your content idea</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={onCancel}>
@@ -193,7 +193,7 @@ export default function IdeaForm({ onSubmit, onCancel }) {
                         <button
                           type="button"
                           onClick={() => handleKeywordRemove(keyword)}
-                          className="ml-2 text-gray-500 hover:text-gray-700"
+                          className="ml-2 text-muted-foreground hover:text-foreground"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -211,7 +211,7 @@ export default function IdeaForm({ onSubmit, onCancel }) {
                 <Button
                   type="submit"
                   disabled={isSubmitting || !formData.title.trim()}
-                  className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 px-8"
+                  className="px-8"
                 >
                   {isSubmitting ? "Creating..." : "Create Idea"}
                 </Button>

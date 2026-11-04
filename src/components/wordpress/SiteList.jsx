@@ -83,21 +83,21 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
     switch (status) {
       case 'connected':
         return (
-          <Badge className="bg-emerald-100 text-emerald-800">
+          <Badge className="bg-accent text-accent-foreground">
             <CheckCircle2 className="w-3 h-3 mr-1" />
             Connected
           </Badge>
         );
       case 'error':
         return (
-          <Badge className="bg-red-100 text-red-800">
+          <Badge className="bg-destructive/10 text-destructive">
             <XCircle className="w-3 h-3 mr-1" />
             Error
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-gray-100 text-gray-800">
+          <Badge className="bg-muted text-foreground">
             Not Connected
           </Badge>
         );
@@ -108,11 +108,11 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
     return (
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="border-0 shadow-lg animate-pulse">
+          <Card key={i} className="border-0 shadow-lift animate-pulse">
             <CardContent className="p-6">
-              <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-6 bg-muted rounded w-3/4 mb-4"></div>
+              <div className="h-4 bg-muted rounded w-full mb-2"></div>
+              <div className="h-4 bg-muted rounded w-1/2"></div>
             </CardContent>
           </Card>
         ))}
@@ -122,11 +122,11 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
 
   if (sites.length === 0) {
     return (
-      <Card className="border-0 shadow-lg">
+      <Card className="border-0 shadow-lift">
         <CardContent className="p-12 text-center">
-          <Globe className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No WordPress Sites</h3>
-          <p className="text-gray-600 max-w-md mx-auto">
+          <Globe className="w-16 h-16 text-muted-foreground/70 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-foreground mb-2">No WordPress Sites</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
             Connect your WordPress sites to publish content directly from AutoBlogr.
           </p>
         </CardContent>
@@ -137,11 +137,11 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {sites.map((site) => (
-        <Card key={site.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+        <Card key={site.id} className="border-0 shadow-lift hover:shadow-pop transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
                   <Globe className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -158,7 +158,7 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
                 href={site.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                className="text-sm text-status-ready hover:text-status-ready flex items-center gap-1"
               >
                 {site.url}
                 <ExternalLink className="w-3 h-3" />
@@ -166,7 +166,7 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
             </div>
 
             {site.default_category && (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Default Category: <span className="font-medium">{site.default_category}</span>
               </p>
             )}
@@ -200,7 +200,7 @@ export default function SiteList({ sites, loading, onEditSite, onRefresh }) {
                 size="sm"
                 onClick={() => handleDeleteSite(site.id)}
                 disabled={deletingSite === site.id}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 {deletingSite === site.id ? (
                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />

@@ -50,17 +50,17 @@ export default function SiteForm({ site, onSubmit, onCancel }) {
         className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
         <Card className="border-0 shadow-2xl">
-          <CardHeader className="border-b bg-gradient-to-r from-emerald-50 to-blue-50">
+          <CardHeader className="border-b bg-muted/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
                   <Globe className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <CardTitle className="text-xl">
                     {site ? 'Edit WordPress Site' : 'Connect WordPress Site'}
                   </CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">Add your WordPress site details</p>
+                  <p className="text-sm text-muted-foreground mt-1">Add your WordPress site details</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={onCancel}>
@@ -70,9 +70,9 @@ export default function SiteForm({ site, onSubmit, onCancel }) {
           </CardHeader>
 
           <CardContent className="p-6">
-            <Alert className="mb-6 border-blue-200 bg-blue-50">
-              <Info className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
+            <Alert className="mb-6 border-status-ready/30 bg-status-ready-bg">
+              <Info className="h-4 w-4 text-status-ready" />
+              <AlertDescription className="text-status-ready">
                 You'll need to create an Application Password in your WordPress admin (Users → Profile → Application Passwords) for secure API access.
               </AlertDescription>
             </Alert>
@@ -176,7 +176,7 @@ export default function SiteForm({ site, onSubmit, onCancel }) {
                 <Button
                   type="submit"
                   disabled={isSubmitting || !formData.name.trim() || !formData.url.trim()}
-                  className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 px-8"
+                  className="px-8"
                 >
                   {isSubmitting ? "Connecting..." : site ? "Update Site" : "Connect Site"}
                 </Button>

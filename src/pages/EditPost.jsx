@@ -256,13 +256,13 @@ Generate only the meta description, no additional text. Do not use quotation mar
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-muted pb-20">
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
@@ -275,8 +275,8 @@ Generate only the meta description, no additional text. Do not use quotation mar
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Edit Post</h1>
-              <p className="text-sm text-gray-500">Make changes to your generated content</p>
+              <h1 className="text-xl font-bold text-foreground">Edit Post</h1>
+              <p className="text-sm text-muted-foreground">Make changes to your generated content</p>
             </div>
           </div>
           
@@ -290,7 +290,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
             <Button 
               onClick={() => setShowPreview(true)}
               variant="outline"
-              className="text-gray-600 border-gray-300 hover:bg-gray-50"
+              className="text-muted-foreground border-border hover:bg-muted"
             >
               <Eye className="w-4 h-4 mr-2" />
               Preview
@@ -299,7 +299,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
             <Button 
               onClick={handleSave}
               disabled={saving}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-primary hover:bg-primary text-white"
             >
               {saving ? (
                 <>
@@ -317,19 +317,19 @@ Generate only the meta description, no additional text. Do not use quotation mar
             <Button 
               onClick={handlePublishClick}
               disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-primary hover:bg-primary text-white"
             >
               <Globe className="w-4 h-4 mr-2" />
               Publish
             </Button>
             
-            <div className="w-px h-8 bg-gray-200 mx-2"></div>
+            <div className="w-px h-8 bg-muted mx-2"></div>
             
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`text-gray-500 hover:text-gray-900 ${isSidebarOpen ? 'bg-gray-100' : ''}`}
+              className={`text-muted-foreground hover:text-foreground ${isSidebarOpen ? 'bg-muted' : ''}`}
               title="Toggle Sidebar"
             >
               <PanelRight className="w-5 h-5" />
@@ -356,11 +356,11 @@ Generate only the meta description, no additional text. Do not use quotation mar
 
       {showPreview && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowPreview(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+          <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b flex justify-between items-center bg-muted">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{formData.title || "Untitled Post"}</h2>
-                <p className="text-sm text-gray-500 mt-1">Preview Mode</p>
+                <h2 className="text-xl font-bold text-foreground">{formData.title || "Untitled Post"}</h2>
+                <p className="text-sm text-muted-foreground mt-1">Preview Mode</p>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setShowPreview(false)}>
                 <X className="w-5 h-5" />
@@ -404,7 +404,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
                       variant="ghost" 
                       size="sm" 
                       onClick={() => setShowToneRephraser(true)}
-                      className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 h-8"
+                      className="text-status-scheduled hover:text-status-scheduled hover:bg-status-scheduled-bg h-8"
                     >
                       <Wand2 className="w-3 h-3 mr-1.5" />
                       Rephrase with AI
@@ -437,7 +437,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
 
             <Card>
               <CardContent className="p-6 space-y-6">
-                <h3 className="font-semibold text-gray-900">SEO Settings</h3>
+                <h3 className="font-semibold text-foreground">SEO Settings</h3>
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between mb-1">
@@ -448,7 +448,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
                       size="sm"
                       onClick={generateSEOTitle}
                       disabled={generatingSEO.seo_title}
-                      className="h-6 text-xs text-purple-600 hover:text-purple-700 px-2"
+                      className="h-6 text-xs text-status-scheduled hover:text-status-scheduled px-2"
                     >
                       {generatingSEO.seo_title ? (
                         <Loader2 className="w-3 h-3 mr-1 animate-spin" />
@@ -465,7 +465,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
                     placeholder="Optimized title for search engines"
                   />
                   <div className="flex justify-end">
-                    <span className={`text-xs ${formData.seo_title.length > 60 ? 'text-red-500' : 'text-gray-400'}`}>
+                    <span className={`text-xs ${formData.seo_title.length > 60 ? 'text-destructive' : 'text-muted-foreground/70'}`}>
                       {formData.seo_title.length}/60
                     </span>
                   </div>
@@ -480,7 +480,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
                       size="sm"
                       onClick={generateMetaDescription}
                       disabled={generatingSEO.meta_description}
-                      className="h-6 text-xs text-purple-600 hover:text-purple-700 px-2"
+                      className="h-6 text-xs text-status-scheduled hover:text-status-scheduled px-2"
                     >
                       {generatingSEO.meta_description ? (
                         <Loader2 className="w-3 h-3 mr-1 animate-spin" />
@@ -498,7 +498,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
                     className="h-24"
                   />
                   <div className="flex justify-end">
-                    <span className={`text-xs ${formData.meta_description.length > 160 ? 'text-red-500' : 'text-gray-400'}`}>
+                    <span className={`text-xs ${formData.meta_description.length > 160 ? 'text-destructive' : 'text-muted-foreground/70'}`}>
                       {formData.meta_description.length}/160
                     </span>
                   </div>
@@ -516,7 +516,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
         >
           <div className="p-6 space-y-6 pb-24">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-lg text-gray-900">Assistant & Settings</h3>
+              <h3 className="font-bold text-lg text-foreground">Assistant & Settings</h3>
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -544,10 +544,10 @@ Generate only the meta description, no additional text. Do not use quotation mar
 
             <Card>
               <CardContent className="p-6 space-y-6">
-                <h3 className="font-semibold text-gray-900">Featured Image</h3>
+                <h3 className="font-semibold text-foreground">Featured Image</h3>
                 
                 <div className="space-y-4">
-                  <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden border relative group">
+                  <div className="aspect-video bg-muted rounded-lg overflow-hidden border relative group">
                     {formData.hero_image_url ? (
                       <>
                         <img 
@@ -557,13 +557,13 @@ Generate only the meta description, no additional text. Do not use quotation mar
                         />
                         <button 
                           onClick={() => setFormData({...formData, hero_image_url: ""})}
-                          className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <X className="w-4 h-4" />
                         </button>
                       </>
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/70">
                         <ImageIcon className="w-8 h-8 mb-2" />
                         <span className="text-xs">No image set</span>
                       </div>
@@ -597,7 +597,7 @@ Generate only the meta description, no additional text. Do not use quotation mar
 
             <Card>
               <CardContent className="p-6 space-y-6">
-                <h3 className="font-semibold text-gray-900">Organization</h3>
+                <h3 className="font-semibold text-foreground">Organization</h3>
                 
                 <div className="space-y-2">
                   <Label htmlFor="excerpt">Excerpt</Label>

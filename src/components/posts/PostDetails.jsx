@@ -78,18 +78,18 @@ Generate only the excerpt, no additional text.`
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'published': return 'bg-emerald-100 text-emerald-800';
-      case 'ready': return 'bg-blue-100 text-blue-800';
-      case 'scheduled': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'published': return 'bg-accent text-accent-foreground';
+      case 'ready': return 'bg-status-ready-bg text-status-ready';
+      case 'scheduled': return 'bg-status-scheduled-bg text-status-scheduled';
+      default: return 'bg-muted text-foreground';
     }
   };
 
   return (
-    <Card className="border-0 shadow-lg">
-      <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-gray-100">
+    <Card className="border-0 shadow-lift">
+      <CardHeader className="border-b bg-muted/50">
         <CardTitle className="text-lg flex items-center gap-2">
-          <FileText className="w-5 h-5 text-emerald-600" />
+          <FileText className="w-5 h-5 text-primary" />
           Post Details
         </CardTitle>
       </CardHeader>
@@ -97,7 +97,7 @@ Generate only the excerpt, no additional text.`
       <CardContent className="p-6 space-y-6">
         {/* Title */}
         <div>
-          <h3 className="font-semibold text-gray-900 mb-1">{post.title}</h3>
+          <h3 className="font-semibold text-foreground mb-1">{post.title}</h3>
           <Badge className={getStatusColor(post.status)}>
             <span className="capitalize">{post.status}</span>
           </Badge>
@@ -106,22 +106,22 @@ Generate only the excerpt, no additional text.`
         {/* Metadata */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm">
-            <Calendar className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-600">
+            <Calendar className="w-4 h-4 text-muted-foreground/70" />
+            <span className="text-muted-foreground">
               Created {format(new Date(post.created_date), 'MMM d, yyyy')}
             </span>
           </div>
           
           <div className="flex items-center gap-2 text-sm">
-            <FileText className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-600">{post.word_count} words</span>
+            <FileText className="w-4 h-4 text-muted-foreground/70" />
+            <span className="text-muted-foreground">{post.word_count} words</span>
           </div>
         </div>
 
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
               <Hash className="w-4 h-4" />
               Tags
             </div>
@@ -139,7 +139,7 @@ Generate only the excerpt, no additional text.`
         {post.excerpt && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Excerpt</span>
+              <span className="text-sm font-medium text-foreground">Excerpt</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -157,7 +157,7 @@ Generate only the excerpt, no additional text.`
                 )}
               </Button>
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed">{post.excerpt}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{post.excerpt}</p>
           </div>
         )}
 
@@ -165,7 +165,7 @@ Generate only the excerpt, no additional text.`
         <div className="pt-4 border-t space-y-2">
           <Button
             onClick={handleEditPost}
-            className="w-full bg-emerald-600 hover:bg-emerald-700"
+            className="w-full bg-primary hover:bg-primary"
           >
             <Edit className="w-4 h-4 mr-2" />
             Edit Post
@@ -175,7 +175,7 @@ Generate only the excerpt, no additional text.`
             variant="outline"
             onClick={handleDeletePost}
             disabled={isDeleting}
-            className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
           >
             {isDeleting ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
