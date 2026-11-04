@@ -86,10 +86,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-amber-500 shadow-lg">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
             <Zap className="h-6 w-6 text-white" />
           </div>
           <CardTitle className="text-2xl">
@@ -156,7 +156,7 @@ export default function Login() {
               </p>
             )}
             {info && (
-              <p className="text-sm font-medium text-emerald-700">{info}</p>
+              <p className="text-sm font-medium text-primary">{info}</p>
             )}
           </CardContent>
 
@@ -169,7 +169,7 @@ export default function Login() {
               type="button"
               onClick={toggleMode}
               disabled={submitting}
-              className="text-sm text-gray-600 hover:text-emerald-600 transition-colors disabled:opacity-50"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
             >
               {isSignUp
                 ? "Already have an account? Sign in"

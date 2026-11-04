@@ -97,17 +97,17 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8">
+      <div className="space-y-7">
         <div className="max-w-4xl mx-auto space-y-8 animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-64"></div>
+          <div className="h-8 bg-muted rounded w-64"></div>
           <div className="grid gap-6">
             {[...Array(3)].map((_, i) => (
               <Card key={i}>
                 <CardContent className="p-6">
-                  <div className="h-6 bg-gray-200 rounded mb-4 w-1/4"></div>
+                  <div className="h-6 bg-muted rounded mb-4 w-1/4"></div>
                   <div className="space-y-3">
-                    <div className="h-4 bg-gray-200 rounded"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded"></div>
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
                   </div>
                 </CardContent>
               </Card>
@@ -119,31 +119,31 @@ export default function Profile() {
   }
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="space-y-7">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Profile Settings</h1>
-            <p className="text-lg text-gray-600 mt-1">Customize your AI content generation preferences</p>
+            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">Profile Settings</h1>
+            <p className="text-lg text-muted-foreground mt-1">Customize your AI content generation preferences</p>
           </div>
           {user && (
-            <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full flex items-center justify-center">
+            <div className="flex items-center gap-3 px-4 py-2 bg-muted rounded-lg">
+              <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
                 <UserIcon className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">{user.full_name || 'Local User'}</p>
-                <p className="text-sm text-gray-600">{user.email}</p>
+                <p className="font-medium text-foreground">{user.full_name || 'Local User'}</p>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
               </div>
             </div>
           )}
         </div>
 
         {saved && (
-          <Alert className="mb-6 border-emerald-200 bg-emerald-50">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            <AlertDescription className="text-emerald-800">
+          <Alert className="mb-6 border-primary/30 bg-accent">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-accent-foreground">
               Profile updated successfully!
             </AlertDescription>
           </Alert>
@@ -151,10 +151,10 @@ export default function Profile() {
 
         <form onSubmit={handleSave} className="space-y-8">
           {/* Business Information */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-gray-100">
+          <Card className="border-0 shadow-lift">
+            <CardHeader className="border-b bg-muted/50">
               <CardTitle className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-emerald-600" />
+                <Building2 className="w-5 h-5 text-primary" />
                 Business Information
               </CardTitle>
             </CardHeader>
@@ -211,10 +211,10 @@ export default function Profile() {
           </Card>
 
           {/* Content Preferences */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-gray-100">
+          <Card className="border-0 shadow-lift">
+            <CardHeader className="border-b bg-muted/50">
               <CardTitle className="flex items-center gap-2">
-                <Volume2 className="w-5 h-5 text-emerald-600" />
+                <Volume2 className="w-5 h-5 text-primary" />
                 Content Preferences
               </CardTitle>
             </CardHeader>
@@ -264,7 +264,7 @@ export default function Profile() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <Label className="text-base font-semibold">Include Hero Images</Label>
-                    <p className="text-sm text-gray-600">Automatically generate hero images for blog posts</p>
+                    <p className="text-sm text-muted-foreground">Automatically generate hero images for blog posts</p>
                   </div>
                   <Switch
                     checked={formData.content_preferences.include_images}
@@ -278,7 +278,7 @@ export default function Profile() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <Label className="text-base font-semibold">SEO Focused</Label>
-                    <p className="text-sm text-gray-600">Optimize content for search engines</p>
+                    <p className="text-sm text-muted-foreground">Optimize content for search engines</p>
                   </div>
                   <Switch
                     checked={formData.content_preferences.seo_focused}
@@ -293,9 +293,9 @@ export default function Profile() {
           </Card>
 
           {/* Current Settings Info */}
-          <Alert className="border-blue-200 bg-blue-50">
-            <Info className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800">
+          <Alert className="border-status-ready/30 bg-status-ready-bg">
+            <Info className="h-4 w-4 text-status-ready" />
+            <AlertDescription className="text-status-ready">
               These settings will be used as defaults when generating new blog content. You can always customize individual posts.
             </AlertDescription>
           </Alert>
@@ -305,7 +305,7 @@ export default function Profile() {
             <Button
               type="submit"
               disabled={saving}
-              className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 px-8 py-3 h-auto"
+              className="px-8 py-3 h-auto"
             >
               {saving ? (
                 <>

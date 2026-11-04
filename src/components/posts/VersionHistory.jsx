@@ -49,10 +49,10 @@ export default function VersionHistory({ postId, currentVersion, onRestore }) {
   };
 
   return (
-    <Card className="border-0 shadow-lg">
-      <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-gray-100 py-4">
+    <Card className="border-0 shadow-lift">
+      <CardHeader className="border-b bg-muted/50 py-4">
         <CardTitle className="text-base flex items-center gap-2">
-          <History className="w-4 h-4 text-emerald-600" />
+          <History className="w-4 h-4 text-primary" />
           Version History
         </CardTitle>
       </CardHeader>
@@ -62,16 +62,16 @@ export default function VersionHistory({ postId, currentVersion, onRestore }) {
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
               </div>
             ))}
           </div>
         ) : versions.length === 0 ? (
           <div className="p-6 text-center">
-            <FileText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">No version history yet</p>
-            <p className="text-xs text-gray-400 mt-1">Versions are saved when you click Save</p>
+            <FileText className="w-8 h-8 text-muted-foreground/70 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">No version history yet</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">Versions are saved when you click Save</p>
           </div>
         ) : (
           <ScrollArea className="h-64">
@@ -79,7 +79,7 @@ export default function VersionHistory({ postId, currentVersion, onRestore }) {
               {versions.map((version, index) => (
                 <div 
                   key={version.id}
-                  className="p-3 rounded-lg border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-colors group"
+                  className="p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-accent/50 transition-colors group"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
@@ -87,14 +87,14 @@ export default function VersionHistory({ postId, currentVersion, onRestore }) {
                         <Badge variant="outline" className="text-xs">
                           v{version.version_number}
                         </Badge>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {getChangeTypeLabel(version.change_type)}
                         </span>
                       </div>
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {version.title}
                       </p>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                         <Clock className="w-3 h-3" />
                         {format(new Date(version.created_date), 'MMM d, h:mm a')}
                       </div>

@@ -288,9 +288,9 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6 text-white">
+        <div className="bg-primary p-6 text-primary-foreground">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-white/20 rounded-lg p-2">
@@ -298,7 +298,7 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">Publish to WordPress</h2>
-                <p className="text-emerald-50 text-sm mt-1">Configure your post settings</p>
+                <p className="text-primary-foreground text-sm mt-1">Configure your post settings</p>
               </div>
             </div>
             <Button
@@ -319,36 +319,36 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
             <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-8 text-center">
               {publishStep === 'success' ? (
                 <div className="animate-in zoom-in duration-300">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle2 className="w-10 h-10 text-green-600" />
+                  <div className="w-20 h-20 bg-status-published-bg rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 className="w-10 h-10 text-primary" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
-                  <p className="text-gray-600 mb-8">{statusMessage}</p>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Success!</h3>
+                  <p className="text-muted-foreground mb-8">{statusMessage}</p>
                 </div>
               ) : (
                 <div className="w-full max-w-sm">
                   <div className="relative w-20 h-20 mx-auto mb-6">
-                    <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
-                    <div className="absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
-                    <Globe className="absolute inset-0 m-auto w-8 h-8 text-emerald-600" />
+                    <div className="absolute inset-0 border-4 border-border rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-primary/30 rounded-full border-t-transparent animate-spin"></div>
+                    <Globe className="absolute inset-0 m-auto w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Publishing to WordPress</h3>
-                  <p className="text-gray-500 mb-8">{statusMessage}</p>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Publishing to WordPress</h3>
+                  <p className="text-muted-foreground mb-8">{statusMessage}</p>
                   
-                  <div className="space-y-3 text-left bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <div className={`flex items-center gap-3 ${publishStep === 'uploading' ? 'text-emerald-600 font-medium' : publishStep === 'terms' || publishStep === 'publishing' || publishStep === 'success' ? 'text-gray-400' : 'text-gray-400'}`}>
+                  <div className="space-y-3 text-left bg-muted rounded-xl p-4 border border-border">
+                    <div className={`flex items-center gap-3 ${publishStep === 'uploading' ? 'text-primary font-medium' : publishStep === 'terms' || publishStep === 'publishing' || publishStep === 'success' ? 'text-muted-foreground/70' : 'text-muted-foreground/70'}`}>
                       {publishStep === 'uploading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 
-                       (publishStep === 'terms' || publishStep === 'publishing' || publishStep === 'success') ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <div className="w-4 h-4 rounded-full border-2 border-gray-300" />}
+                       (publishStep === 'terms' || publishStep === 'publishing' || publishStep === 'success') ? <CheckCircle2 className="w-4 h-4 text-primary" /> : <div className="w-4 h-4 rounded-full border-2 border-border" />}
                       <span>Uploading media...</span>
                     </div>
-                    <div className={`flex items-center gap-3 ${publishStep === 'terms' ? 'text-emerald-600 font-medium' : publishStep === 'publishing' || publishStep === 'success' ? 'text-gray-400' : 'text-gray-400'}`}>
+                    <div className={`flex items-center gap-3 ${publishStep === 'terms' ? 'text-primary font-medium' : publishStep === 'publishing' || publishStep === 'success' ? 'text-muted-foreground/70' : 'text-muted-foreground/70'}`}>
                        {publishStep === 'terms' ? <Loader2 className="w-4 h-4 animate-spin" /> : 
-                       (publishStep === 'publishing' || publishStep === 'success') ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <div className="w-4 h-4 rounded-full border-2 border-gray-300" />}
+                       (publishStep === 'publishing' || publishStep === 'success') ? <CheckCircle2 className="w-4 h-4 text-primary" /> : <div className="w-4 h-4 rounded-full border-2 border-border" />}
                       <span>Configuring categories & tags...</span>
                     </div>
-                    <div className={`flex items-center gap-3 ${publishStep === 'publishing' ? 'text-emerald-600 font-medium' : publishStep === 'success' ? 'text-gray-400' : 'text-gray-400'}`}>
+                    <div className={`flex items-center gap-3 ${publishStep === 'publishing' ? 'text-primary font-medium' : publishStep === 'success' ? 'text-muted-foreground/70' : 'text-muted-foreground/70'}`}>
                        {publishStep === 'publishing' ? <Loader2 className="w-4 h-4 animate-spin" /> : 
-                       publishStep === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <div className="w-4 h-4 rounded-full border-2 border-gray-300" />}
+                       publishStep === 'success' ? <CheckCircle2 className="w-4 h-4 text-primary" /> : <div className="w-4 h-4 rounded-full border-2 border-border" />}
                       <span>Creating post...</span>
                     </div>
                   </div>
@@ -358,27 +358,27 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
           ) : null}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-red-900">Error</p>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
+                <p className="text-sm font-medium text-destructive">Error</p>
+                <p className="text-sm text-destructive mt-1">{error}</p>
               </div>
             </div>
           )}
 
           {/* WordPress Site Selection */}
           <div>
-            <Label htmlFor="site" className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
-              <Globe className="w-4 h-4 text-emerald-600" />
+            <Label htmlFor="site" className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
+              <Globe className="w-4 h-4 text-primary" />
               WordPress Site
             </Label>
             {loadingSites ? (
-              <div className="h-12 bg-gray-100 rounded-lg animate-pulse"></div>
+              <div className="h-12 bg-muted rounded-lg animate-pulse"></div>
             ) : sites.length === 0 ? (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <p className="text-sm text-amber-900">No connected WordPress sites found.</p>
-                <p className="text-xs text-amber-700 mt-1">Please connect a site in the WordPress settings first.</p>
+              <div className="bg-status-generating-bg border border-status-generating/30 rounded-lg p-4">
+                <p className="text-sm text-status-generating">No connected WordPress sites found.</p>
+                <p className="text-xs text-status-generating mt-1">Please connect a site in the WordPress settings first.</p>
               </div>
             ) : (
               <Select value={selectedSiteId} onValueChange={setSelectedSiteId}>
@@ -390,7 +390,7 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
                     <SelectItem key={site.id} value={site.id}>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{site.name}</span>
-                        <span className="text-xs text-gray-500">({site.url})</span>
+                        <span className="text-xs text-muted-foreground">({site.url})</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -398,25 +398,25 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
               </Select>
             )}
             {selectedSite && (
-              <div className="mt-2 text-sm text-gray-600 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
                 Will publish to: <span className="font-medium">{selectedSite.url}</span>
               </div>
             )}
           </div>
 
           {/* Post Preview */}
-          <div className="bg-gray-50 rounded-lg p-4 border">
-            <Label className="text-sm font-semibold text-gray-700 mb-3 block">Post Preview</Label>
+          <div className="bg-muted rounded-lg p-4 border">
+            <Label className="text-sm font-semibold text-foreground mb-3 block">Post Preview</Label>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-gray-500 mb-1">Title</p>
-                <p className="text-sm font-semibold text-gray-900">{post.title}</p>
+                <p className="text-xs text-muted-foreground mb-1">Title</p>
+                <p className="text-sm font-semibold text-foreground">{post.title}</p>
               </div>
               {post.hero_image_url && (
                 <div>
-                  <p className="text-xs text-gray-500 mb-2">Featured Image</p>
-                  <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-200">
+                  <p className="text-xs text-muted-foreground mb-2">Featured Image</p>
+                  <div className="w-full h-32 rounded-lg overflow-hidden bg-muted">
                     <img
                       src={post.hero_image_url}
                       alt={post.hero_image_alt || post.title}
@@ -426,16 +426,16 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
                 </div>
               )}
               <div>
-                <p className="text-xs text-gray-500 mb-1">Word Count</p>
-                <p className="text-sm text-gray-700">{post.word_count || 0} words</p>
+                <p className="text-xs text-muted-foreground mb-1">Word Count</p>
+                <p className="text-sm text-foreground">{post.word_count || 0} words</p>
               </div>
             </div>
           </div>
 
           {/* Categories */}
           <div>
-            <Label htmlFor="categories" className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
-              <Folder className="w-4 h-4 text-emerald-600" />
+            <Label htmlFor="categories" className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
+              <Folder className="w-4 h-4 text-primary" />
               Categories
             </Label>
             <Input
@@ -445,7 +445,7 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
               onChange={(e) => setCategories(e.target.value)}
               className="h-12"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {selectedSite?.default_category 
                 ? `Default: ${selectedSite.default_category}` 
                 : "Separate multiple categories with commas"}
@@ -454,8 +454,8 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
 
           {/* Tags */}
           <div>
-            <Label htmlFor="tags" className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-2">
-              <Tag className="w-4 h-4 text-emerald-600" />
+            <Label htmlFor="tags" className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
+              <Tag className="w-4 h-4 text-primary" />
               Tags
             </Label>
             <Input
@@ -465,12 +465,12 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
               onChange={(e) => setTags(e.target.value)}
               className="h-12"
             />
-            <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
+            <p className="text-xs text-muted-foreground mt-1">Separate multiple tags with commas</p>
           </div>
 
           {/* Custom Excerpt */}
           <div>
-            <Label htmlFor="excerpt" className="text-sm font-semibold text-gray-700 mb-2 block">
+            <Label htmlFor="excerpt" className="text-sm font-semibold text-foreground mb-2 block">
               Custom Excerpt (Optional)
             </Label>
             <Textarea
@@ -480,7 +480,7 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
               onChange={(e) => setCustomExcerpt(e.target.value)}
               className="h-24 resize-none"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Leave empty to use the auto-generated excerpt
             </p>
           </div>
@@ -489,10 +489,10 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
           <div className="border-t pt-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-indigo-600" />
+                <Clock className="w-5 h-5 text-status-scheduled" />
                 <div>
-                  <Label className="text-sm font-semibold text-gray-700">Schedule Publishing</Label>
-                  <p className="text-xs text-gray-500">Publish at a specific date and time</p>
+                  <Label className="text-sm font-semibold text-foreground">Schedule Publishing</Label>
+                  <p className="text-xs text-muted-foreground">Publish at a specific date and time</p>
                 </div>
               </div>
               <Switch
@@ -502,11 +502,11 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
             </div>
 
             {scheduleEnabled && (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 space-y-4">
+              <div className="bg-status-scheduled-bg border border-status-scheduled/30 rounded-lg p-4 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="scheduled_date" className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                      <CalendarIcon className="w-4 h-4 text-indigo-600" />
+                    <Label htmlFor="scheduled_date" className="text-sm font-medium text-foreground flex items-center gap-2 mb-2">
+                      <CalendarIcon className="w-4 h-4 text-status-scheduled" />
                       Date
                     </Label>
                     <Input
@@ -519,8 +519,8 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="scheduled_time" className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
-                      <Clock className="w-4 h-4 text-indigo-600" />
+                    <Label htmlFor="scheduled_time" className="text-sm font-medium text-foreground flex items-center gap-2 mb-2">
+                      <Clock className="w-4 h-4 text-status-scheduled" />
                       Time
                     </Label>
                     <Input
@@ -533,8 +533,8 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
                   </div>
                 </div>
                 {scheduledDate && scheduledTime && (
-                  <div className="bg-white rounded-lg p-3 border border-indigo-300">
-                    <p className="text-sm text-indigo-900">
+                  <div className="bg-white rounded-lg p-3 border border-status-scheduled/30">
+                    <p className="text-sm text-status-scheduled">
                       <span className="font-semibold">Will publish on:</span>{" "}
                       {format(new Date(`${scheduledDate}T${scheduledTime}`), 'MMMM d, yyyy')} at {scheduledTime}
                     </p>
@@ -546,7 +546,7 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
         </div>
 
         {/* Footer */}
-        <div className="border-t bg-gray-50 p-6 flex items-center justify-between">
+        <div className="border-t bg-muted p-6 flex items-center justify-between">
           <Button
             variant="outline"
             onClick={onClose}
@@ -558,7 +558,7 @@ export default function PublishModal({ post, onClose, onPublishSuccess }) {
           <Button
             onClick={handlePublish}
             disabled={publishing || !selectedSiteId || sites.length === 0}
-            className={`${scheduleEnabled ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700'} px-8`}
+            className={`${scheduleEnabled ? 'bg-primary hover:bg-primary' : 'bg-primary hover:bg-primary'} px-8`}
           >
             {publishing ? (
               <>

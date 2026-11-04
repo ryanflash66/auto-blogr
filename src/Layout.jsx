@@ -1,268 +1,91 @@
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 
-import { Link, useLocation } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import {
-  LayoutDashboard,
-  Lightbulb,
-  FileText,
-  Settings,
-  User as UserIcon,
-  Zap,
-  Menu,
-  X,
-  Beaker,
-  LogOut
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useAuth } from "@/lib/AuthContext";
+import { Sidebar } from '@/components/shell/Sidebar';
+import { Topbar } from '@/components/shell/Topbar';
+import { visibleNavGroups } from '@/components/shell/nav-items';
+import { useAuth } from '@/lib/AuthContext';
+import { createPageUrl } from '@/utils';
 
-const navigationItems = [
-  {
-    title: "Dashboard",
-    url: createPageUrl("Dashboard"),
-    icon: LayoutDashboard,
-    description: "Overview & analytics"
-  },
-  {
-    title: "Ideas",
-    url: createPageUrl("Ideas"),
-    icon: Lightbulb,
-    description: "Create & manage ideas"
-  },
-  {
-    title: "Posts",
-    url: createPageUrl("Posts"),
-    icon: FileText,
-    description: "Generated content"
-  },
-  {
-    title: "WordPress",
-    url: createPageUrl("WordPress"),
-    icon: Settings,
-    description: "Site connections"
-  },
-  {
-    title: "Profile",
-    url: createPageUrl("Profile"),
-    icon: UserIcon,
-    description: "Business settings"
-  },
-  {
-    title: "LLM Test",
-    url: createPageUrl("LLMTest"),
-    icon: Beaker,
-    description: "Test integrations",
-    devOnly: true
-  }
-];
-
+/**
+ * App shell: a fixed, flat sidebar on desktop, a slide-over on small screens,
+ * and one measured content column so every page shares the same rhythm.
+ */
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // Hide dev-only items (e.g. LLM Test) from the production sidebar + mobile menu.
-  const visibleNavigationItems = navigationItems.filter(
-    (item) => !item.devOnly || import.meta.env.DEV
-  );
+  const groups = visibleNavGroups(import.meta.env.DEV);
+  const activeItem = groups
+    .flatMap((group) => group.items)
+    .find((item) => item.url === location.pathname);
+  const sectionLabel = activeItem?.title ?? currentPageName ?? 'Dashboard';
 
-  const isActivePage = (url) => location.pathname === url;
+  // Escape closes the slide-over; route changes close it too.
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <style>
-        {`
-          :root {
-            --primary: #059669;
-            --primary-dark: #047857;
-            --accent: #f59e0b;
-            --accent-dark: #d97706;
-            --dark: #1a1a1a;
-            --dark-light: #2d2d2d;
-            --text-light: #6b7280;
-            --border-light: #e5e7eb;
-          }
-          
-          .glass-effect {
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-          }
-          
-          .nav-item-active {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            transform: translateX(4px);
-          }
-          
-          .nav-item-inactive {
-            color: var(--text-light);
-            transition: all 0.3s ease;
-          }
-          
-          .nav-item-inactive:hover {
-            color: var(--primary);
-            background: rgba(5, 150, 105, 0.05);
-            transform: translateX(2px);
-          }
-          
-          .premium-gradient {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-          }
-          
-          .text-gradient {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          }
-        `}
-      </style>
+    <div className="min-h-screen bg-background">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 lg:block">
+        <Sidebar
+          groups={groups}
+          currentPath={location.pathname}
+          user={user}
+          onSignOut={() => signOut()}
+          LinkComponent={Link}
+        />
+      </aside>
 
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto glass-effect px-6 py-8">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="premium-gradient w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg">
-              <Zap className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gradient">AutoBlogr</h1>
-              <p className="text-xs text-gray-500 font-medium">AI Content Creation</p>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex flex-1 flex-col space-y-2">
-            {visibleNavigationItems.map((item) => {
-              const isActive = isActivePage(item.url);
-              return (
-                <Link
-                  key={item.title}
-                  to={item.url}
-                  className={`group flex items-center gap-4 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
-                    isActive ? 'nav-item-active shadow-lg' : 'nav-item-inactive'
-                  }`}
-                >
-                  <item.icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
-                  <div className="flex flex-col">
-                    <span className={isActive ? 'text-white' : ''}>{item.title}</span>
-                    <span className={`text-xs ${isActive ? 'text-white/70' : 'text-gray-400'}`}>
-                      {item.description}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Bottom Section */}
-          <div className="rounded-2xl bg-gradient-to-r from-emerald-50 to-amber-50 p-4">
-            <div className="text-center">
-              <Zap className="mx-auto h-8 w-8 text-emerald-600 mb-2" />
-              <h3 className="text-sm font-semibold text-gray-900">AI-Powered</h3>
-              <p className="text-xs text-gray-600 mt-1">
-                Create amazing content with the power of AI
-              </p>
-            </div>
-          </div>
-
-          {/* Account / Sign out */}
-          <div className="border-t border-gray-200 pt-4">
-            {user?.email && (
-              <p
-                className="mb-2 truncate text-xs text-gray-500"
-                title={user.email}
-              >
-                Signed in as <span className="font-medium text-gray-700">{user.email}</span>
-              </p>
-            )}
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2"
-              onClick={() => signOut()}
+      {menuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            aria-label="Close navigation"
+            onClick={() => setMenuOpen(false)}
+            className="absolute inset-0 bg-foreground/30 backdrop-blur-sm"
+          />
+          <div className="animate-fade-up absolute inset-y-0 left-0 w-[17rem] max-w-[85vw] shadow-pop">
+            <Sidebar
+              groups={groups}
+              currentPath={location.pathname}
+              user={user}
+              onSignOut={() => signOut()}
+              onNavigate={() => setMenuOpen(false)}
+              LinkComponent={Link}
+            />
+            <button
+              type="button"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Close navigation"
+              className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </Button>
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Mobile Header */}
-      <div className="lg:hidden">
-        <div className="glass-effect px-4 py-4 flex items-center justify-between border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="premium-gradient w-8 h-8 rounded-xl flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <h1 className="text-lg font-bold text-gradient">AutoBlogr</h1>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden glass-effect border-b border-gray-200">
-            <div className="px-4 py-2 space-y-1">
-              {visibleNavigationItems.map((item) => {
-                const isActive = isActivePage(item.url);
-                return (
-                  <Link
-                    key={item.title}
-                    to={item.url}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`block rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                      isActive 
-                        ? 'bg-emerald-600 text-white' 
-                        : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      {item.title}
-                    </div>
-                  </Link>
-                );
-              })}
-
-              {/* Account / Sign out */}
-              <div className="mt-2 border-t border-gray-200 pt-2">
-                {user?.email && (
-                  <p className="px-3 pb-2 truncate text-xs text-gray-500" title={user.email}>
-                    {user.email}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    signOut();
-                  }}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-600"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign out
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Main Content */}
-      <div className="lg:pl-72">
-        <main className="min-h-screen">
-          {children}
-        </main>
+      <div className="lg:pl-64">
+        <Topbar
+          sectionLabel={sectionLabel}
+          onOpenMenu={() => setMenuOpen(true)}
+          primaryActionUrl={createPageUrl('Ideas')}
+          LinkComponent={Link}
+        />
+        <main className="mx-auto w-full max-w-[1180px] px-5 py-7 md:px-8 md:py-9">{children}</main>
       </div>
     </div>
   );

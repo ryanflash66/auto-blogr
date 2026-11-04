@@ -133,10 +133,10 @@ export default function IdeaDetails({ idea, onUpdate }) {
   };
 
   return (
-    <Card className="border-0 shadow-lg sticky top-8">
-      <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-gray-100">
+    <Card className="border-0 shadow-lift sticky top-8">
+      <CardHeader className="border-b bg-muted/50">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-emerald-600" />
+          <Sparkles className="w-5 h-5 text-primary" />
           Idea Details
         </CardTitle>
       </CardHeader>
@@ -144,12 +144,12 @@ export default function IdeaDetails({ idea, onUpdate }) {
       <CardContent className="p-6 space-y-6">
         {/* Status */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">Status</span>
+          <span className="text-sm font-medium text-foreground">Status</span>
           <Badge className={`${
-            idea.status === 'published' ? 'bg-emerald-100 text-emerald-800' :
-            idea.status === 'generating' ? 'bg-amber-100 text-amber-800' :
-            idea.status === 'ready' ? 'bg-blue-100 text-blue-800' :
-            'bg-gray-100 text-gray-800'
+            idea.status === 'published' ? 'bg-accent text-accent-foreground' :
+            idea.status === 'generating' ? 'bg-status-generating-bg text-status-generating' :
+            idea.status === 'ready' ? 'bg-status-ready-bg text-status-ready' :
+            'bg-muted text-foreground'
           } border`}>
             <span className="capitalize">{idea.status}</span>
           </Badge>
@@ -158,26 +158,26 @@ export default function IdeaDetails({ idea, onUpdate }) {
         {/* Metadata */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm">
-            <Calendar className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-600">Created {format(new Date(idea.created_date), 'MMM d, yyyy')}</span>
+            <Calendar className="w-4 h-4 text-muted-foreground/70" />
+            <span className="text-muted-foreground">Created {format(new Date(idea.created_date), 'MMM d, yyyy')}</span>
           </div>
           
           <div className="flex items-center gap-2 text-sm">
-            <Zap className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-600">{idea.variations_requested} variation{idea.variations_requested > 1 ? 's' : ''} requested</span>
+            <Zap className="w-4 h-4 text-muted-foreground/70" />
+            <span className="text-muted-foreground">{idea.variations_requested} variation{idea.variations_requested > 1 ? 's' : ''} requested</span>
           </div>
 
           {idea.tone && (
             <div className="flex items-center gap-2 text-sm">
-              <Volume2 className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-600 capitalize">{idea.tone} tone</span>
+              <Volume2 className="w-4 h-4 text-muted-foreground/70" />
+              <span className="text-muted-foreground capitalize">{idea.tone} tone</span>
             </div>
           )}
 
           {idea.target_audience && (
             <div className="flex items-center gap-2 text-sm">
-              <Target className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-600">{idea.target_audience}</span>
+              <Target className="w-4 h-4 text-muted-foreground/70" />
+              <span className="text-muted-foreground">{idea.target_audience}</span>
             </div>
           )}
         </div>
@@ -185,7 +185,7 @@ export default function IdeaDetails({ idea, onUpdate }) {
         {/* Keywords */}
         {idea.keywords && idea.keywords.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
               <Hash className="w-4 h-4" />
               Keywords
             </div>
@@ -202,8 +202,8 @@ export default function IdeaDetails({ idea, onUpdate }) {
         {/* Description */}
         {idea.description && (
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-2">Description</div>
-            <p className="text-sm text-gray-600 leading-relaxed">{idea.description}</p>
+            <div className="text-sm font-medium text-foreground mb-2">Description</div>
+            <p className="text-sm text-muted-foreground leading-relaxed">{idea.description}</p>
           </div>
         )}
 
@@ -213,7 +213,7 @@ export default function IdeaDetails({ idea, onUpdate }) {
             <Button
               onClick={handleGenerateContent}
               disabled={isGenerating}
-              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800"
+              className="w-full"
             >
               {isGenerating ? (
                 <>
@@ -231,7 +231,7 @@ export default function IdeaDetails({ idea, onUpdate }) {
           
           {idea.status === 'ready' && (
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-primary hover:bg-primary"
               onClick={() => navigate(createPageUrl("Posts"))}
             >
               <FileText className="w-4 h-4 mr-2" />
@@ -242,10 +242,10 @@ export default function IdeaDetails({ idea, onUpdate }) {
 
         {/* Generation Progress */}
         {isGenerating && generationProgress && (
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="p-3 bg-status-generating-bg border border-status-generating/30 rounded-lg">
             <div className="flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-amber-600" />
-              <span className="text-sm text-amber-800">{generationProgress}</span>
+              <Loader2 className="w-4 h-4 animate-spin text-status-generating" />
+              <span className="text-sm text-status-generating">{generationProgress}</span>
             </div>
           </div>
         )}

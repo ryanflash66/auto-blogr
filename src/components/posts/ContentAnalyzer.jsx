@@ -88,15 +88,15 @@ Provide a detailed analysis with:
   };
 
   const getScoreColor = (score) => {
-    if (score >= 8) return "text-emerald-600";
-    if (score >= 6) return "text-amber-600";
-    return "text-red-600";
+    if (score >= 8) return "text-primary";
+    if (score >= 6) return "text-status-generating";
+    return "text-destructive";
   };
 
   const getScoreBg = (score) => {
-    if (score >= 8) return "bg-emerald-100";
-    if (score >= 6) return "bg-amber-100";
-    return "bg-red-100";
+    if (score >= 8) return "bg-accent";
+    if (score >= 6) return "bg-status-generating-bg";
+    return "bg-destructive/10";
   };
 
   const getCategoryIcon = (category) => {
@@ -106,17 +106,17 @@ Provide a detailed analysis with:
   };
 
   const getPriorityColor = (priority) => {
-    if (priority === 'high') return 'bg-red-100 text-red-800 border-red-200';
-    if (priority === 'medium') return 'bg-amber-100 text-amber-800 border-amber-200';
-    return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (priority === 'high') return 'bg-destructive/10 text-destructive border-destructive/30';
+    if (priority === 'medium') return 'bg-status-generating-bg text-status-generating border-status-generating/30';
+    return 'bg-status-ready-bg text-status-ready border-status-ready/30';
   };
 
   return (
-    <Card className="border-0 shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
+    <Card className="border-0 shadow-lift">
+      <CardHeader className="bg-muted/50">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-blue-600" />
+            <BookOpen className="w-5 h-5 text-status-ready" />
             Content Analysis
           </CardTitle>
           {!analysis && (
@@ -124,7 +124,7 @@ Provide a detailed analysis with:
               onClick={analyzeContent}
               disabled={analyzing}
               size="sm"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary"
             >
               {analyzing ? (
                 <>
@@ -145,8 +145,8 @@ Provide a detailed analysis with:
       <CardContent className="p-6">
         {!analysis ? (
           <div className="text-center py-8">
-            <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 text-sm">
+            <BookOpen className="w-12 h-12 text-muted-foreground/70 mx-auto mb-4" />
+            <p className="text-muted-foreground text-sm">
               Get AI-powered suggestions to improve your content's clarity, engagement, and flow
             </p>
           </div>
@@ -159,7 +159,7 @@ Provide a detailed analysis with:
                   <div className={`text-2xl font-bold ${getScoreColor(value)}`}>
                     {value}/10
                   </div>
-                  <p className="text-xs font-medium text-gray-700 capitalize mt-1">
+                  <p className="text-xs font-medium text-foreground capitalize mt-1">
                     {key}
                   </p>
                 </div>
@@ -168,27 +168,27 @@ Provide a detailed analysis with:
 
             {/* Summary */}
             {analysis.summary && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-gray-700">{analysis.summary}</p>
+              <div className="bg-status-ready-bg border border-status-ready/30 rounded-lg p-4">
+                <p className="text-sm text-foreground">{analysis.summary}</p>
               </div>
             )}
 
             {/* Suggestions */}
             {analysis.suggestions && analysis.suggestions.length > 0 && (
               <div className="space-y-3">
-                <h4 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-amber-600" />
+                <h4 className="font-semibold text-foreground text-sm flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-status-generating" />
                   Improvement Suggestions ({analysis.suggestions.length})
                 </h4>
                 <div className="space-y-2">
                   {analysis.suggestions.map((suggestion, index) => (
                     <div
                       key={index}
-                      className="border border-gray-200 rounded-lg overflow-hidden"
+                      className="border border-border rounded-lg overflow-hidden"
                     >
                       <button
                         onClick={() => toggleSuggestion(index)}
-                        className="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+                        className="w-full text-left p-3 bg-muted hover:bg-muted transition-colors flex items-center justify-between"
                       >
                         <div className="flex items-center gap-3 flex-1">
                           {getCategoryIcon(suggestion.category)}
@@ -201,32 +201,32 @@ Provide a detailed analysis with:
                                 {suggestion.priority}
                               </Badge>
                             </div>
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-foreground">
                               {suggestion.issue}
                             </p>
                           </div>
                         </div>
                         {expandedSuggestions[index] ? (
-                          <ChevronUp className="w-4 h-4 text-gray-500" />
+                          <ChevronUp className="w-4 h-4 text-muted-foreground" />
                         ) : (
-                          <ChevronDown className="w-4 h-4 text-gray-500" />
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
                         )}
                       </button>
                       
                       {expandedSuggestions[index] && (
                         <div className="p-4 bg-white border-t space-y-3">
                           <div>
-                            <p className="text-xs font-semibold text-gray-700 mb-1">Why it matters:</p>
-                            <p className="text-sm text-gray-600">{suggestion.why_it_matters}</p>
+                            <p className="text-xs font-semibold text-foreground mb-1">Why it matters:</p>
+                            <p className="text-sm text-muted-foreground">{suggestion.why_it_matters}</p>
                           </div>
                           <div>
-                            <p className="text-xs font-semibold text-gray-700 mb-1">How to fix:</p>
-                            <p className="text-sm text-gray-600">{suggestion.how_to_fix}</p>
+                            <p className="text-xs font-semibold text-foreground mb-1">How to fix:</p>
+                            <p className="text-sm text-muted-foreground">{suggestion.how_to_fix}</p>
                           </div>
                           {suggestion.example && (
-                            <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                              <p className="text-xs font-semibold text-blue-900 mb-1">Example:</p>
-                              <p className="text-sm text-blue-800 italic">{suggestion.example}</p>
+                            <div className="bg-status-ready-bg border border-status-ready/30 rounded p-3">
+                              <p className="text-xs font-semibold text-status-ready mb-1">Example:</p>
+                              <p className="text-sm text-status-ready italic">{suggestion.example}</p>
                             </div>
                           )}
                         </div>
