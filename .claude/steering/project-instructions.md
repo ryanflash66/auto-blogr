@@ -1,10 +1,10 @@
 # AutoBlogr — Project Instructions (operating contract)
 
 ## Project summary
-AI-powered blog content generator with WordPress publishing, being converted from a single-user localStorage app into a hosted, multi-user **Supabase** SaaS. **Bring-your-own-key** AI: each user stores their own OpenRouter + image-provider key in their `profiles` row.
+AI-powered blog content generator with WordPress publishing: a **personal, non-commercial** tool (not for sale), moved from a single-user localStorage app onto hosted **Supabase**. **Bring-your-own-key** AI: each user stores their own OpenRouter key in their `profiles` row. Free plans only (Supabase Free, Vercel Hobby); public sign-up is off and the owner creates any accounts. Out of scope: billing, paid tiers, custom SMTP, email confirmation, growth/scale work.
 
 ## Stack
-- **Root app** (the SaaS target): React 18 + Vite 6, JavaScript with typecheck (`jsconfig.json` + `tsc`), Tailwind + shadcn/ui, `@supabase/supabase-js`, TanStack Query, react-hook-form + zod, Vitest. Package manager: **npm**.
+- **Root app**: React 18 + Vite 6, JavaScript with typecheck (`jsconfig.json` + `tsc`), Tailwind + shadcn/ui, `@supabase/supabase-js`, TanStack Query, react-hook-form + zod, Vitest. Package manager: **npm**.
 - `wp-plugin/`: PHP WordPress plugin (PHPUnit, own CI, 80% coverage floor).
 - `autoblogr-web/`: **stale** older sub-app (Vite 4 + Clerk) — retire/integrate decision pending (DAR-388).
 - Services: Supabase (project ref `zxyfdepyahwwerwvuazp`), Vercel (deploy target, Phase E).

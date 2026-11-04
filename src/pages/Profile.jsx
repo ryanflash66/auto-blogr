@@ -17,7 +17,8 @@ import {
   Volume2, 
   Save,
   CheckCircle2,
-  Info
+  Info,
+  KeyRound
 } from "lucide-react";
 
 export default function Profile() {
@@ -38,6 +39,10 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  // The stored key is never put back into the form; we only track whether one exists.
+  const [hasApiKey, setHasApiKey] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [replacingKey, setReplacingKey] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -47,21 +52,23 @@ export default function Profile() {
 
   const loadUserData = async () => {
     try {
-      // Populate form with existing data
+      // The auth user carries no profile fields; read the saved profile row.
+      const profile = await User.me();
       setFormData(prev => ({
         ...prev,
-        business_name: user.business_name || "",
-        business_description: user.business_description || "",
-        industry: user.industry || "",
-        target_audience: user.target_audience || "",
-        brand_voice: user.brand_voice || "professional",
+        business_name: profile.business_name || "",
+        business_description: profile.business_description || "",
+        industry: profile.industry || "",
+        target_audience: profile.target_audience || "",
+        brand_voice: profile.brand_voice || "professional",
         content_preferences: {
-          preferred_length: user.content_preferences?.preferred_length || "medium",
-          include_images: user.content_preferences?.include_images ?? true,
-          seo_focused: user.content_preferences?.seo_focused ?? true
+          preferred_length: profile.content_preferences?.preferred_length || "medium",
+          include_images: profile.content_preferences?.include_images ?? true,
+          seo_focused: profile.content_preferences?.seo_focused ?? true
         },
-        timezone: user.timezone || "UTC"
+        timezone: profile.timezone || "UTC"
       }));
+      setHasApiKey(Boolean(profile.openrouter_api_key));
     } catch (error) {
       console.error("Error loading user data:", error);
     } finally {
@@ -76,7 +83,17 @@ export default function Profile() {
     setSaving(true);
     
     try {
-      await User.updateMyUserData(user.id, formData);
+      // An empty key field means "keep the stored key", so only send a new one.
+      const newKey = apiKeyInput.trim();
+      await User.updateMyUserData(
+        user.id,
+        newKey ? { ...formData, openrouter_api_key: newKey } : formData
+      );
+      if (newKey) {
+        setHasApiKey(true);
+        setApiKeyInput("");
+        setReplacingKey(false);
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
       toast({
@@ -289,6 +306,60 @@ export default function Profile() {
                   />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* AI Provider Key */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-gray-100">
+              <CardTitle className="flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-emerald-600" />
+                AI Provider
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-3">
+              {hasApiKey && !replacingKey ? (
+                <div className="flex items-center justify-between">
+                  <p className="flex items-center gap-2 text-base font-semibold text-gray-900">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    OpenRouter key saved
+                  </p>
+                  <Button type="button" variant="outline" onClick={() => setReplacingKey(true)}>
+                    Replace
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="openrouter_api_key" className="text-base font-semibold">OpenRouter API key</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="openrouter_api_key"
+                      type="password"
+                      autoComplete="off"
+                      placeholder="sk-or-..."
+                      value={apiKeyInput}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
+                      className="h-12"
+                    />
+                    {hasApiKey && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-12"
+                        onClick={() => {
+                          setApiKeyInput("");
+                          setReplacingKey(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Used for AI generation. Get one at openrouter.ai/keys. Once saved it is never shown again.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

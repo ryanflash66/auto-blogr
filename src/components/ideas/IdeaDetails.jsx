@@ -31,7 +31,9 @@ export default function IdeaDetails({ idea, onUpdate }) {
     if (!user?.id) return;
     
     setIsGenerating(true);
-    
+    // A failed hero image doesn't stop the post; remember it to report once.
+    let imageError = null;
+
     try {
       for (let i = 1; i <= idea.variations_requested; i++) {
         setGenerationProgress(`Generating variation ${i} of ${idea.variations_requested}...`);
@@ -87,6 +89,7 @@ export default function IdeaDetails({ idea, onUpdate }) {
           imageUrl = imageResult.url;
         } catch (imgError) {
           console.warn('Image generation failed, continuing without image:', imgError);
+          imageError = imgError;
         }
 
         // Save the generated blog post
@@ -118,6 +121,13 @@ export default function IdeaDetails({ idea, onUpdate }) {
         title: "Content generated",
         description: `Created ${idea.variations_requested} post${idea.variations_requested > 1 ? "s" : ""} from this idea.`,
       });
+
+      if (imageError) {
+        toast({
+          title: "Saved without a hero image",
+          description: imageError.message || "Image generation failed.",
+        });
+      }
 
     } catch (error) {
       console.error("Error generating content:", error);
